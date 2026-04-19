@@ -1148,6 +1148,138 @@ strong { color: var(--text-primary); font-weight: 700; }
   border-radius: 3px;
 }
 
+/* ─── SECTION DONNÉES EFFACÉES ─── */
+.efface-wrapper {
+  border: 2px solid rgba(232,85,85,0.7);
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(100,0,0,0.06) 0px, rgba(100,0,0,0.06) 8px,
+    transparent 8px, transparent 16px
+  );
+  padding: 0;
+  margin-bottom: 30px;
+  position: relative;
+}
+.efface-stamp {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: rgba(232,85,85,0.18);
+  transform: rotate(-12deg);
+  pointer-events: none;
+  white-space: nowrap;
+  border: 3px solid rgba(232,85,85,0.15);
+  padding: 6px 12px;
+  line-height: 1.3;
+  text-align: center;
+}
+.efface-header {
+  background: rgba(80,0,0,0.55);
+  border-bottom: 1px solid rgba(232,85,85,0.5);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.efface-header-icon {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 22px;
+  color: var(--red-alert);
+  text-shadow: 0 0 12px rgba(232,85,85,0.8);
+  flex-shrink: 0;
+  animation: blink-red 1s step-end infinite;
+}
+.efface-header-text .efface-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: var(--red-alert);
+  text-shadow: 0 0 10px rgba(232,85,85,0.5);
+  text-transform: uppercase;
+}
+.efface-header-text .efface-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(200,100,100,0.8);
+  margin-top: 4px;
+}
+.efface-attribution {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(200,100,100,0.6);
+  padding: 10px 24px;
+  border-bottom: 1px solid rgba(232,85,85,0.2);
+  background: rgba(60,0,0,0.3);
+}
+.efface-attribution span { color: rgba(232,85,85,0.8); }
+.efface-body {
+  padding: 22px 28px;
+}
+.efface-entry {
+  margin-bottom: 22px;
+  border-left: 2px solid rgba(232,85,85,0.4);
+  padding-left: 18px;
+}
+.efface-entry:last-child { margin-bottom: 0; }
+.efface-entry-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(232,85,85,0.6);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.efface-entry-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: #c48a8a;
+  line-height: 1.78;
+}
+.efface-entry-text strong { color: #e0a0a0; }
+.efface-entry-text em { color: #d4a0a0; font-style: italic; }
+.efface-quote {
+  background: rgba(60,0,0,0.4);
+  border: 1px solid rgba(232,85,85,0.25);
+  padding: 14px 18px;
+  margin-top: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  color: #c48a8a;
+  line-height: 1.72;
+}
+.efface-quote .efface-speaker {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: rgba(232,85,85,0.5);
+  margin-bottom: 5px;
+}
+.efface-divider {
+  height: 1px;
+  background: rgba(232,85,85,0.2);
+  margin: 20px 0;
+}
+.efface-synthesis {
+  background: rgba(40,0,0,0.5);
+  border: 1px solid rgba(232,85,85,0.3);
+  border-left: 3px solid var(--red-alert);
+  padding: 18px 22px;
+  margin-top: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  color: #c48a8a;
+  line-height: 1.78;
+}
+.efface-synthesis strong { color: #e0a0a0; }
+
 /* PRINT */
 @media print {
   @page { size: A4; margin: 12mm; }
@@ -1313,6 +1445,7 @@ strong { color: var(--text-primary); font-weight: 700; }
     <a href="#s11" class="sidebar-link danger"><span class="idx">11</span> Corps Introuvable</a>
     <a href="#s12" class="sidebar-link"><span class="idx">12</span> Conclusions & Alertes</a>
 
+    <a href="#s_efface" class="sidebar-link danger"><span class="idx">⚠</span> Données Effacées</a>
     <div class="sidebar-divider"></div>
     <div class="sidebar-label">Annexes</div>
     <a href="#s13" class="sidebar-link"><span class="idx">↳</span> Glossaire Vortiges</a>
@@ -2348,6 +2481,102 @@ strong { color: var(--text-primary); font-weight: 700; }
           <div class="phase-name">Clans & Sha'Vorr</div>
           <div class="phase-desc">Structure des trois clans Vortigaunts documentée. La Rupture comme origine des restrictions de pouvoirs.</div>
           <div class="phase-duration">BASE DE DONNÉES — À ARCHIVER</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION DONNÉES EFFACÉES -->
+    <section id="s_efface" class="c-section">
+      <div class="section-header">
+        <div class="section-num danger">⚠ REC</div>
+        <div>
+          <div class="section-title">Données Effacées — Récupérées</div>
+          <div class="section-title-sub">NIVEAU MAXIMAL REQUIS // SOURCE : DR. LUA TYLER // NON DISTRIBUÉ</div>
+        </div>
+      </div>
+
+      <div class="efface-wrapper">
+        <div class="efface-stamp">DONNÉES<br>EFFACÉES</div>
+
+        <div class="efface-header">
+          <div class="efface-header-icon">⚠</div>
+          <div class="efface-header-text">
+            <div class="efface-title">DONNÉES EFFACÉES — NIVEAU MAXIMAL REQUIS</div>
+            <div class="efface-sub">CONTENU RETIRÉ DU RAPPORT PRINCIPAL AVANT DIFFUSION // RÉCUPÉRÉ DEPUIS LES NOTES MANUSCRITES ORIGINALES</div>
+          </div>
+        </div>
+
+        <div class="efface-attribution">
+          SOURCE EXCLUSIVE : <span>Dr. Lua Tyler, Docteur Chercheuse UNISCA D8</span> &nbsp;·&nbsp;
+          RÉFÉRENCE : <span>INC-UNISCA-D8-VORT-001</span> &nbsp;·&nbsp;
+          STATUT : <span>NON DISTRIBUÉ — DOSSIER INTERNE UNIQUEMENT</span>
+        </div>
+
+        <div class="efface-body">
+
+          <div class="efface-entry">
+            <div class="efface-entry-label">// Description physique du Nihilant — retirée avant diffusion</div>
+            <div class="efface-entry-text">
+              Confirmée par le sujet. Le Nihilant était un embryon géant, blanc, avec une main au niveau du ventre et un cerveau hypertrophié d'une taille considérable. Le Vortigaunt Kra l'a identifié sans hésitation à la description d'Iris Norberg.
+            </div>
+          </div>
+
+          <div class="efface-divider"></div>
+
+          <div class="efface-entry">
+            <div class="efface-entry-label">// Répliques supprimées — identité du vainqueur du Nihilant</div>
+            <div class="efface-quote">
+              <div class="efface-speaker">KRA — VERBATIM ORIGINAL</div>
+              <em>"Ce n'est pas les Vortigaunts qui l'ont terrassé... Mais un homme, un de votre espèce."</em>
+            </div>
+            <div class="efface-quote" style="margin-top:6px;">
+              <div class="efface-speaker">KRA — VERBATIM ORIGINAL</div>
+              <em>"Un homme portant une armure orange et un symbole en son centre."</em>
+            </div>
+            <div class="efface-quote" style="margin-top:6px;">
+              <div class="efface-speaker">KRA — VERBATIM ORIGINAL</div>
+              <em>"Ceux sur Xen ont été contraints à l'attaquer par les petits êtres qui nous manipulaient. Et l'autre partie était paniquée... Cherchant à fuir nos oppresseurs dans votre monde... Ils n'agissaient pas par envie mais par survie et panique."</em>
+            </div>
+            <div class="efface-quote" style="margin-top:6px;">
+              <div class="efface-speaker">KRA — VERBATIM ORIGINAL</div>
+              <em>"Cet homme... Il a quelque chose de plus que vous tous réunis..."</em>
+            </div>
+          </div>
+
+          <div class="efface-divider"></div>
+
+          <div class="efface-entry">
+            <div class="efface-entry-label">// Observation personnelle de Lua Tyler — retirée du rapport</div>
+            <div class="efface-entry-text">
+              À cette révélation, j'ai échangé un regard entendu avec les membres de la sécurité présents dans la salle. La mention d'un homme humain venant de la Terre, portant une armure orange, a provoqué en moi un sentiment difficile à décrire. Un homme de notre espèce. Pas une armée, pas une coalition, pas une flotte — <strong>un seul homme</strong>. Et il a suffi.
+            </div>
+          </div>
+
+          <div class="efface-divider"></div>
+
+          <div class="efface-entry">
+            <div class="efface-entry-label">// Analyse — un homme de la Terre contre une entité extraterrestre millénaire</div>
+            <div class="efface-entry-text">
+              Pour mesurer ce que cela représente, il faut replacer les faits dans leur contexte. Le Nihilant était une forme de vie extraterrestre d'une puissance incommensurable. Il avait asservi le peuple Vortigaunt entier — une espèce capable de manipuler l'espace, le temps et la matière — via des colliers énergétiques, les réduisant à n'être que des marionnettes à son service pendant des <strong>millénaires</strong>. Ce même peuple, dont certains Sages peuvent voyager entre les dimensions, n'avait pas réussi à s'en défaire seul.
+            </div>
+            <div class="efface-entry-text" style="margin-top:10px;">
+              Et pourtant. Un homme. Seul. Venu de la Terre. Une planète que le Vortigaunt Kra lui-même a décrite comme <em>"très loin, loin de tout — vous étiez chanceux"</em>, une planète qui à peine su envoyer une fusée sur la lune, selon mes propres mots lors de la session. <strong>Un homme en armure orange, portant un symbole en son centre, issu de cette même planète "chanceuse", a réussi à terrasser le Nihilant là où personne d'autre ne l'avait fait.</strong>
+            </div>
+            <div class="efface-entry-text" style="margin-top:10px;">
+              Le Vortigaunt Kra a déclaré que cet homme <em>"a quelque chose de plus que vous tous réunis."</em> Je ne sais pas ce que cela signifie exactement. Mais venant d'un guerrier Kra'Thral, d'une espèce qui vénère la force comme principe d'existence, c'est peut-être la déclaration la plus lourde de sens de toute cette session.
+            </div>
+          </div>
+
+          <div class="efface-divider"></div>
+
+          <div class="efface-synthesis">
+            <strong>Synthèse — Note personnelle de Lua Tyler, Docteur Chercheuse UNISCA D8</strong><br><br>
+            Ces données ont été retirées du rapport principal avant sa diffusion à l'administration. Je les consigne ici dans mes notes personnelles parce qu'il me semble important qu'une trace en existe quelque part. Ce que le Vortigaunt nous a dit ce soir-là sur cet homme dépasse largement le cadre d'un simple renseignement militaire ou scientifique. Il s'agit d'un fait qui, s'il était connu et compris à sa juste valeur, changerait probablement la façon dont nous nous percevons en tant qu'espèce.<br><br>
+            Un homme. Une armure orange. Un symbole. La Terre.<br><br>
+            Et le Nihilant est mort.<br><br>
+            <em>— Lua Tyler, Dr. — UNISCA D8 — Référence INC-UNISCA-D8-VORT-001</em>
+          </div>
+
         </div>
       </div>
     </section>
