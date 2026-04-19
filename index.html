@@ -1,0 +1,2626 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAPPORT D'INCIDENT // INC-UNISCA-D8-VORT-001 // DIVISION RECHERCHE BIOTIQUE</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --combine-orange: #ffb04a;
+  --combine-orange-dim: #c97d28;
+  --combine-orange-glow: rgba(248,149,42,0.18);
+  --combine-blue: #62d8ec;
+  --combine-blue-dim: #3a9eb0;
+  --bg-dark: #070c10;
+  --bg-panel: rgba(18, 26, 34, 0.92);
+  --bg-panel2: rgba(22, 32, 42, 0.92);
+  --bg-panel3: #0a1016;
+  --text-primary: #faf6ee;
+  --text-secondary: #dce8ee;
+  --text-dim: #b4c4d0;
+  --border-main: #3a4d60;
+  --border-accent: #4a6278;
+  --red-alert: #e85555;
+  --green-ok: #5cb87a;
+  --scan-line: rgba(0, 14, 10, 0.07);
+  --glass-blur: blur(8px);
+  --crt-vignette-edge: rgba(0, 0, 0, 0.38);
+  --vort-green: #4ecb71;
+  --vort-green-dim: #2a7a3e;
+  --vort-green-glow: rgba(78,203,113,0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; min-height: 100%; }
+
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  pointer-events: none;
+  background: radial-gradient(ellipse 88% 78% at 50% 50%, transparent 0%, transparent 52%, var(--crt-vignette-edge) 100%);
+  opacity: 0.48;
+}
+
+html::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1002;
+  pointer-events: none;
+  background: linear-gradient(183deg, rgba(40,72,58,0.06) 0%, rgba(22,42,36,0.03) 38%, rgba(32,55,45,0.05) 100%);
+  mix-blend-mode: soft-light;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  font-weight: 500;
+  min-height: 100vh;
+  overflow-x: hidden;
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.22);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); border-left: 1px solid var(--border-main); }
+::-webkit-scrollbar-thumb { background: var(--combine-orange-dim); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--combine-orange); }
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, var(--scan-line) 2px, var(--scan-line) 3px);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.28;
+}
+
+.doc-watermark {
+  position: fixed;
+  inset: 0;
+  z-index: 550;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='200' viewBox='0 0 360 200'%3E%3Ctext x='180' y='102' fill='%23faf6ee' fill-opacity='0.030' font-family='Arial,sans-serif' font-size='19' font-weight='700' text-anchor='middle' dominant-baseline='middle' transform='rotate(-28 180 100)'%3ECONFIDENTIEL%3C/text%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 360px 200px;
+}
+
+/* Boot Sequence */
+.boot-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg-dark);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  transition: opacity 1.6s ease-in-out;
+  pointer-events: none;
+}
+.boot-overlay.fade-out { opacity: 0; visibility: hidden; }
+.boot-header {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--combine-orange-dim);
+  text-align: center;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--combine-orange-dim);
+  padding-bottom: 14px;
+  width: 520px;
+  max-width: 90vw;
+}
+.boot-header .bh-main {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--combine-orange);
+  letter-spacing: 0.2em;
+  display: block;
+  margin-bottom: 6px;
+  text-shadow: 0 0 14px rgba(248,149,42,0.5);
+}
+.boot-header .bh-author {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+}
+.boot-text {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--combine-orange);
+  font-size: 12.5px;
+  text-align: left;
+  line-height: 2.2;
+  letter-spacing: 0.09em;
+  width: 520px;
+  max-width: 90vw;
+  min-height: 200px;
+}
+.boot-text .b-red  { color: var(--red-alert); text-shadow: 0 0 8px rgba(232,85,85,0.5); }
+.boot-text .b-green { color: var(--vort-green); }
+.boot-text .b-dim  { color: var(--text-dim); }
+.boot-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--combine-orange);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: cursor-blink 0.7s step-end infinite;
+}
+@keyframes cursor-blink { 50% { opacity: 0; } }
+@keyframes boot-fade { to { opacity: 0; visibility: hidden; } }
+@keyframes logo-pulse {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(248,149,42,0.45)) drop-shadow(0 0 4px rgba(248,149,42,0.25)) brightness(0.9) saturate(0.65); }
+  50%       { filter: drop-shadow(0 0 28px rgba(248,149,42,0.75)) drop-shadow(0 0 10px rgba(248,149,42,0.4)) brightness(1.0) saturate(0.8); }
+}
+
+/* HEADER */
+.c-header {
+  background: linear-gradient(180deg, rgba(10,15,20,0.97) 0%, rgba(13,18,21,0.97) 100%);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 2px solid var(--combine-orange);
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  box-shadow: 0 4px 30px rgba(248,149,42,0.15);
+}
+
+.c-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 30px;
+  border-bottom: 1px solid var(--border-main);
+}
+
+.c-logo { display: flex; align-items: center; gap: 14px; }
+
+.c-logo-emblem {
+  height: 48px;
+  padding: 4px 12px;
+  border: 2px solid var(--combine-orange);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--combine-orange-glow);
+  animation: emblem-pulse 3s ease-in-out infinite;
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--combine-orange);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 10px rgba(248,149,42,0.5);
+}
+@keyframes emblem-pulse {
+  0%,100% { box-shadow: 0 0 8px rgba(232,133,26,0.4); }
+  50% { box-shadow: 0 0 22px rgba(232,133,26,0.75), 0 0 44px rgba(232,133,26,0.2); }
+}
+
+.c-logo-text { font-family: 'Orbitron', monospace; }
+.c-logo-text .line1 { font-size: 11px; letter-spacing: 0.15em; color: var(--combine-orange); font-weight: 700; }
+.c-logo-text .line2 { font-size: 9px; letter-spacing: 0.1em; color: var(--text-dim); font-weight: 400; }
+
+.c-header-status { display: flex; align-items: center; gap: 24px; }
+
+.status-item {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+.status-item span { display: block; color: var(--text-secondary); }
+.status-item .val { color: var(--combine-orange); }
+.status-item .val-red { color: var(--red-alert); text-shadow: 0 0 6px rgba(232,85,85,0.5); }
+
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red-alert);
+  animation: blink-red 1.2s step-end infinite;
+  box-shadow: 0 0 8px var(--red-alert);
+}
+@keyframes blink-red { 50% { opacity: 0.2; } }
+@keyframes blink { 50% { opacity: 0.3; } }
+
+.c-header-title-bar {
+  padding: 8px 30px;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  background: rgba(232,133,26,0.04);
+}
+.c-header-title-bar h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--combine-orange);
+  text-transform: uppercase;
+}
+.c-header-title-bar .sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+.clearance-badge {
+  margin-left: auto;
+  background: rgba(196,48,48,0.15);
+  border: 1px solid var(--red-alert);
+  color: var(--red-alert);
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  padding: 3px 10px;
+  border-radius: 2px;
+  text-shadow: 0 0 6px rgba(232,85,85,0.4);
+  animation: blink-red 2s step-end infinite;
+}
+
+/* TICKER */
+.ticker {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  font-weight: 700;
+  color: #ff4444;
+  padding: 5px 30px;
+  background: rgba(60, 0, 0, 0.92);
+  border-top: 1px solid rgba(232,85,85,0.5);
+  border-bottom: 2px solid rgba(232,85,85,0.7);
+  overflow: hidden;
+  white-space: nowrap;
+  box-shadow: 0 0 18px rgba(232,85,85,0.25), inset 0 0 30px rgba(120,0,0,0.3);
+  animation: ticker-alert-pulse 2.5s ease-in-out infinite alternate;
+  text-shadow: 0 0 8px rgba(255,60,60,0.7);
+}
+@keyframes ticker-alert-pulse {
+  0%   { box-shadow: 0 0 10px rgba(232,85,85,0.2), inset 0 0 20px rgba(100,0,0,0.3); }
+  100% { box-shadow: 0 0 28px rgba(232,85,85,0.55), inset 0 0 40px rgba(140,0,0,0.4); }
+}
+.ticker-inner {
+  display: inline-block;
+  animation: ticker-scroll 90s linear infinite;
+}
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* LAYOUT */
+.c-layout {
+  display: grid;
+  grid-template-columns: 268px 1fr;
+  min-height: calc(100vh - 110px);
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* SIDEBAR */
+.c-sidebar {
+  background: var(--bg-panel3);
+  border-right: 1px solid var(--border-main);
+  padding: 20px 0;
+  position: sticky;
+  top: 110px;
+  height: calc(100vh - 110px);
+  overflow-y: auto;
+}
+.c-sidebar::-webkit-scrollbar { width: 4px; }
+.c-sidebar::-webkit-scrollbar-track { background: var(--bg-dark); }
+.c-sidebar::-webkit-scrollbar-thumb { background: var(--combine-orange-dim); }
+
+.sidebar-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  padding: 8px 16px 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sidebar-label::before { content: ''; width: 12px; height: 1px; background: var(--text-dim); }
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+.sidebar-link:hover {
+  color: var(--combine-orange);
+  background: var(--combine-orange-glow);
+  border-left-color: var(--combine-orange);
+}
+.sidebar-link .idx {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-dim);
+  min-width: 22px;
+}
+.sidebar-link.danger { color: #c08080; }
+.sidebar-link.danger:hover { color: var(--red-alert); background: rgba(232,85,85,0.07); border-left-color: var(--red-alert); }
+
+.sidebar-divider { height: 1px; background: var(--border-main); margin: 10px 16px; }
+
+.sidebar-meta {
+  padding: 14px 16px;
+  background: rgba(232,133,26,0.04);
+  border-top: 1px solid var(--border-main);
+}
+.sidebar-meta .meta-row {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+.sidebar-meta .meta-row span { color: var(--text-secondary); }
+.sidebar-meta .meta-row .val-red { color: var(--red-alert); }
+
+/* MAIN CONTENT */
+.c-main { padding: 32px 42px; max-width: 960px; }
+.c-main p { margin-bottom: 0.85em; max-width: 70ch; }
+
+/* SECTION HEADERS */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-accent);
+  position: relative;
+  transition: all 0.3s;
+}
+.section-header:hover { border-bottom-color: var(--combine-orange-dim); }
+.section-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 80px; height: 2px;
+  background: var(--combine-orange);
+  box-shadow: 0 0 8px var(--combine-orange);
+  transition: width 0.3s ease;
+}
+.section-header:hover::after { width: 130px; }
+
+.section-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  color: var(--combine-orange);
+  background: rgba(248,149,42,0.12);
+  border: 1px solid var(--combine-orange-dim);
+  padding: 6px 10px;
+  letter-spacing: 0.1em;
+  min-width: 64px;
+  text-align: center;
+  box-shadow: inset 0 0 10px rgba(248,149,42,0.1);
+  text-shadow: 0 0 5px rgba(248,149,42,0.5);
+}
+.section-num.danger {
+  color: var(--red-alert);
+  background: rgba(232,85,85,0.12);
+  border-color: rgba(232,85,85,0.5);
+  text-shadow: 0 0 5px rgba(232,85,85,0.5);
+}
+
+.section-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(228,217,184,0.3);
+}
+.section-title-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  opacity: 0.92;
+}
+
+/* CONTENT SECTION */
+.c-section {
+  margin-bottom: 58px;
+  animation: fade-in-up 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.c-section:nth-child(1) { animation-delay: 2.0s; }
+.c-section:nth-child(2) { animation-delay: 2.15s; }
+.c-section:nth-child(3) { animation-delay: 2.3s; }
+.c-section:nth-child(4) { animation-delay: 2.45s; }
+.c-section:nth-child(5) { animation-delay: 2.6s; }
+.c-section:nth-child(6) { animation-delay: 2.75s; }
+.c-section:nth-child(7) { animation-delay: 2.9s; }
+.c-section:nth-child(8) { animation-delay: 3.05s; }
+.c-section:nth-child(9) { animation-delay: 3.2s; }
+.c-section:nth-child(10) { animation-delay: 3.35s; }
+.c-section:nth-child(11) { animation-delay: 3.5s; }
+.c-section:nth-child(n+12) { animation-delay: 3.65s; }
+@keyframes fade-in-up { to { opacity: 1; transform: translateY(0); } }
+
+/* PANELS */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  border-left: 3px solid var(--combine-orange-dim);
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.panel:hover {
+  border-color: var(--combine-orange-dim);
+  box-shadow: 0 4px 20px var(--combine-orange-glow);
+  transform: translateY(-2px);
+}
+.panel::before {
+  content: attr(data-label);
+  position: absolute;
+  top: -1px; right: 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--combine-orange);
+  background: var(--bg-panel);
+  padding: 0 6px;
+  text-transform: uppercase;
+}
+.panel:hover::before { color: #fff; text-shadow: 0 0 5px var(--combine-orange); }
+
+.panel-blue { border-left-color: var(--combine-blue-dim); }
+.panel-blue:hover { border-color: var(--combine-blue-dim); box-shadow: 0 4px 20px rgba(74,197,216,0.15); }
+.panel-blue::before { color: var(--combine-blue); }
+.panel-blue:hover::before { text-shadow: 0 0 5px var(--combine-blue); }
+
+.panel-red { border-left-color: #8a2a2a; }
+.panel-red:hover { border-color: var(--red-alert); box-shadow: 0 4px 24px rgba(232,85,85,0.2); }
+.panel-red::before { color: var(--red-alert); }
+.panel-red:hover::before { text-shadow: 0 0 5px var(--red-alert); }
+
+.panel-vort { border-left-color: var(--vort-green-dim); }
+.panel-vort:hover { border-color: var(--vort-green); box-shadow: 0 4px 20px var(--vort-green-glow); }
+.panel-vort::before { color: var(--vort-green); }
+.panel-vort:hover::before { text-shadow: 0 0 5px var(--vort-green); }
+
+.panel h3 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--combine-orange);
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(248,149,42,0.3);
+}
+.panel p {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.82;
+  margin-bottom: 14px;
+  letter-spacing: 0.01em;
+}
+.panel p:last-child { margin-bottom: 0; }
+
+/* DATA GRID */
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.data-cell {
+  background: var(--bg-panel2);
+  border: 1px solid var(--border-main);
+  border-top: 2px solid var(--combine-orange-dim);
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+.data-cell:hover {
+  background: rgba(248,149,42,0.05);
+  border-top-color: var(--combine-orange);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+.data-cell.dc-red { border-top-color: rgba(232,85,85,0.6); }
+.data-cell.dc-red:hover { border-top-color: var(--red-alert); }
+.data-cell .dc-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.data-cell .dc-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--combine-orange);
+  text-shadow: 0 0 10px rgba(248,149,42,0.4);
+}
+.data-cell .dc-value.red { color: var(--red-alert); text-shadow: 0 0 10px rgba(232,85,85,0.4); }
+.data-cell .dc-value.green { color: var(--vort-green); text-shadow: 0 0 10px rgba(78,203,113,0.4); }
+.data-cell .dc-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+/* TABLE */
+.c-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-main);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.c-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+}
+.c-table thead tr {
+  background: rgba(248,149,42,0.1);
+  border-bottom: 2px solid var(--combine-orange-dim);
+}
+.c-table th {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--combine-orange);
+  text-transform: uppercase;
+  padding: 12px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+.c-table td {
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-main);
+  vertical-align: top;
+}
+.c-table tbody tr:hover { background: rgba(248,149,42,0.06); }
+.c-table tbody tr:nth-child(even) { background: rgba(0,0,0,0.3); }
+.c-table tbody tr:nth-child(even):hover { background: rgba(248,149,42,0.06); }
+.c-table .highlight { color: var(--combine-orange); font-weight: 700; }
+.c-table .highlight-vort { color: var(--vort-green); font-weight: 700; }
+.c-table .dim { color: var(--text-dim); font-size: 12px; }
+
+/* LIST */
+.c-list { list-style: none; margin-bottom: 16px; }
+.c-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(46,64,80,0.5);
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.65;
+  transition: all 0.2s;
+}
+.c-list li:last-child { border-bottom: none; }
+.c-list li:hover { background: rgba(248,149,42,0.04); color: var(--text-primary); transform: translateX(4px); }
+.c-list li::before {
+  content: '>>';
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--combine-orange-dim);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.c-list li:hover::before { color: var(--combine-orange); text-shadow: 0 0 5px var(--combine-orange); }
+
+/* ALERT BOX */
+.alert-box {
+  background: rgba(212,64,64,0.08);
+  border: 1px solid rgba(212,64,64,0.4);
+  border-left: 3px solid var(--red-alert);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  gap: 14px;
+  box-shadow: 0 4px 15px rgba(212,64,64,0.1);
+  animation: alert-pulse 3s infinite alternate;
+}
+@keyframes alert-pulse {
+  0% { box-shadow: 0 0 5px rgba(212,64,64,0.1); }
+  100% { box-shadow: 0 0 18px rgba(212,64,64,0.35); }
+}
+.alert-box .alert-icon {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  color: var(--red-alert);
+  flex-shrink: 0;
+  margin-top: 2px;
+  text-shadow: 0 0 8px var(--red-alert);
+}
+.alert-box .alert-text { font-size: 14px; color: #c48a8a; line-height: 1.7; }
+.alert-box .alert-text strong { color: #e0a0a0; }
+
+/* INFO BOX */
+.info-box {
+  background: rgba(74,197,216,0.08);
+  border: 1px solid rgba(74,197,216,0.3);
+  border-left: 3px solid var(--combine-blue-dim);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  gap: 14px;
+}
+.info-box .info-icon {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  color: var(--combine-blue);
+  flex-shrink: 0;
+  margin-top: 2px;
+  text-shadow: 0 0 8px var(--combine-blue);
+}
+.info-box .info-text { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+/* VORT BOX */
+.vort-box {
+  background: rgba(78,203,113,0.07);
+  border: 1px solid rgba(78,203,113,0.3);
+  border-left: 3px solid var(--vort-green-dim);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  gap: 14px;
+}
+.vort-box .vort-icon {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  color: var(--vort-green);
+  flex-shrink: 0;
+  margin-top: 2px;
+  text-shadow: 0 0 8px var(--vort-green);
+}
+.vort-box .vort-text { font-size: 14px; color: #a0d4b0; line-height: 1.7; }
+.vort-box .vort-text strong { color: #c4e8cc; }
+
+/* PHASE CARDS */
+.phase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.phase-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.phase-card:hover {
+  border-color: var(--combine-orange-dim);
+  box-shadow: 0 8px 25px rgba(248,149,42,0.15);
+  transform: translateY(-4px);
+}
+.phase-card.danger:hover { border-color: var(--red-alert); box-shadow: 0 8px 25px rgba(232,85,85,0.2); }
+.phase-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 28px 28px 0;
+  border-color: transparent var(--combine-orange-dim) transparent transparent;
+}
+.phase-card.danger::after { border-color: transparent rgba(232,85,85,0.5) transparent transparent; }
+.phase-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--combine-orange);
+  margin-bottom: 6px;
+  text-shadow: 0 0 5px rgba(248,149,42,0.4);
+}
+.phase-card.danger .phase-num { color: var(--red-alert); text-shadow: 0 0 5px rgba(232,85,85,0.4); }
+.phase-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.phase-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; }
+.phase-duration {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--combine-orange-dim);
+  border-top: 1px solid var(--border-main);
+  padding-top: 9px;
+}
+.phase-card.danger .phase-duration { color: rgba(232,85,85,0.7); }
+
+/* SEPARATOR */
+.c-sep {
+  height: 1px;
+  background: linear-gradient(90deg, var(--combine-orange-dim), transparent);
+  margin: 28px 0;
+}
+
+/* CITE TERMINAL */
+.cite-terminal {
+  border-left: 3px solid var(--combine-orange);
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 3px),
+    linear-gradient(180deg, rgba(14,20,26,0.98) 0%, rgba(8,12,18,0.99) 100%);
+  margin-bottom: 24px;
+}
+.cite-terminal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px 12px 18px;
+  border-bottom: 1px solid var(--border-main);
+}
+.cite-terminal .cite-terminal-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  line-height: 1.3;
+}
+.cite-terminal-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--combine-orange);
+  white-space: nowrap;
+  margin-top: 3px;
+  text-shadow: 0 0 8px rgba(248,149,42,0.35);
+}
+.cite-terminal-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 20px 12px 18px;
+  border-bottom: 1px solid rgba(46,64,80,0.55);
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+.cite-terminal-row:last-child { border-bottom: none; }
+.cite-terminal-chev {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--combine-orange);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.cite-terminal-chev.kra { color: var(--vort-green); text-shadow: 0 0 5px var(--vort-green); }
+.cite-terminal-chev.red { color: var(--red-alert); text-shadow: 0 0 5px var(--red-alert); }
+.cite-terminal-text { flex: 1; min-width: 0; }
+.cite-terminal-text .lab { font-weight: 700; color: var(--text-primary); }
+.cite-terminal-text .lab.kra-name { color: var(--vort-green); }
+.cite-terminal-text .lab.red-name { color: var(--red-alert); }
+
+/* CHRONO */
+.chrono-wrap {
+  margin: 22px 0 30px;
+  padding: 18px 16px 22px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  border-left: 3px solid var(--red-alert);
+  overflow-x: auto;
+}
+.chrono-wrap .cw-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--red-alert);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.chrono-wrap .cw-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 18px; line-height: 1.5; }
+.chrono-flow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  min-width: min-content;
+  padding-bottom: 4px;
+}
+.chrono-step { flex: 0 0 auto; width: 110px; text-align: center; }
+.chrono-node {
+  width: 38px; height: 38px;
+  margin: 0 auto 10px;
+  border: 2px solid var(--red-alert);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--red-alert);
+  background: rgba(232,85,85,0.1);
+  box-shadow: 0 0 14px rgba(232,85,85,0.25);
+}
+.chrono-name { font-size: 10.5px; font-weight: 600; color: var(--text-primary); line-height: 1.35; }
+.chrono-arrow {
+  flex: 0 0 auto;
+  width: 22px;
+  text-align: center;
+  padding-top: 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: rgba(232,85,85,0.5);
+}
+
+/* TEAM CARD */
+.team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.team-card { background: var(--bg-panel2); border: 1px solid var(--border-main); padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+.team-avatar {
+  width: 44px; height: 44px;
+  border: 1px solid var(--combine-orange-dim);
+  background: rgba(232,133,26,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  color: var(--combine-orange);
+  flex-shrink: 0;
+}
+.team-avatar.vort { border-color: var(--vort-green-dim); background: rgba(78,203,113,0.08); color: var(--vort-green); }
+.team-avatar.danger { border-color: rgba(232,85,85,0.5); background: rgba(232,85,85,0.08); color: var(--red-alert); }
+.team-name { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.team-role { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.06em; color: var(--text-secondary); margin-top: 4px; line-height: 1.5; }
+
+/* INLINE */
+code { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--combine-blue); background: rgba(58,181,200,0.07); padding: 1px 5px; border: 1px solid rgba(58,181,200,0.15); }
+code.vort { color: var(--vort-green); background: rgba(78,203,113,0.07); border-color: rgba(78,203,113,0.2); }
+strong { color: var(--text-primary); font-weight: 700; }
+
+.c-main h2 { font-family: 'Orbitron', monospace; font-size: 12.5px; letter-spacing: 0.1em; color: var(--combine-orange); text-transform: uppercase; margin: 24px 0 12px; }
+.c-main h3 { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 18px 0 10px; border-left: 3px solid var(--combine-orange-dim); padding-left: 10px; }
+
+/* READER NOTE */
+.reader-note {
+  background: rgba(74,197,216,0.10);
+  border: 1px solid rgba(98,216,236,0.4);
+  border-left: 3px solid var(--combine-blue-dim);
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.82;
+  color: var(--text-secondary);
+}
+.reader-note strong { color: var(--text-primary); }
+.reader-note .rn-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--combine-blue);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* FOOTER */
+.c-footer {
+  background: var(--bg-panel3);
+  border-top: 2px solid var(--combine-orange-dim);
+  padding: 16px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+}
+.c-footer .left {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.c-footer .right {
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--combine-orange-dim);
+  text-align: right;
+  line-height: 1.8;
+}
+
+/* RESPONSIVE */
+@media (max-width: 860px) {
+  .c-layout { grid-template-columns: 1fr; }
+  .c-sidebar { display: none; }
+  .c-main { padding: 20px 18px; }
+}
+
+/* MORT / INCIDENT — BANDE ROUGE CLIGNOTANTE */
+.incident-banner {
+  background: repeating-linear-gradient(45deg, rgba(232,85,85,0.08) 0, rgba(232,85,85,0.08) 10px, transparent 10px, transparent 20px);
+  border: 1px solid rgba(232,85,85,0.5);
+  border-left: 4px solid var(--red-alert);
+  padding: 20px 24px;
+  margin-bottom: 22px;
+  animation: incident-pulse 2.5s infinite alternate;
+}
+@keyframes incident-pulse {
+  0% { box-shadow: 0 0 8px rgba(232,85,85,0.15); }
+  100% { box-shadow: 0 0 24px rgba(232,85,85,0.45); }
+}
+.incident-banner .ib-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  color: var(--red-alert);
+  text-shadow: 0 0 8px rgba(232,85,85,0.5);
+  margin-bottom: 10px;
+}
+.incident-banner p { font-size: 15px; color: #c48a8a; line-height: 1.75; max-width: none; }
+
+/* ─── REDACTION / CENSURE STYLE FBI ─── */
+.redacted {
+  background: #000;
+  color: transparent !important;
+  user-select: none;
+  border-radius: 1px;
+  padding: 1px 4px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  word-break: break-word;
+  vertical-align: middle;
+  position: relative;
+  cursor: default;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+  transition: filter 0.2s;
+}
+.redacted:hover { filter: brightness(1.08); }
+.redacted * { color: transparent !important; }
+
+/* Bande noire pleine ligne (pour les lignes entières de dialogue) */
+.redacted-row {
+  position: relative;
+  overflow: hidden;
+}
+.redacted-row .cite-terminal-text {
+  background: #000 !important;
+  border-radius: 2px;
+  user-select: none;
+}
+.redacted-row .cite-terminal-text,
+.redacted-row .cite-terminal-text *,
+.redacted-row em,
+.redacted-row strong,
+.redacted-row .lab,
+.redacted-row .lab.kra-name {
+  color: transparent !important;
+  user-select: none;
+}
+.redacted-row::after {
+  content: '— DONNÉES SUPPRIMÉES —';
+  position: absolute;
+  left: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(180,60,60,0.45);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Bloc paragraphe entier censuré */
+.redacted-block {
+  background: #000 !important;
+  color: transparent !important;
+  user-select: none;
+  border-radius: 2px;
+  padding: 12px 16px;
+  position: relative;
+  margin-bottom: 0.85em;
+  max-width: 70ch;
+}
+.redacted-block::after {
+  content: '— DONNÉES SUPPRIMÉES —';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(180,60,60,0.45);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Sceau confidentiel sur les panels censurés */
+.panel-censored::before {
+  content: 'CENSURÉ' !important;
+  color: var(--red-alert) !important;
+}
+.panel-censored {
+  border-left-color: rgba(232,85,85,0.6) !important;
+}
+
+/* ─── INDICATEUR DE DONNÉES MANQUANTES — STYLE DOSSIER OFFICIEL ─── */
+.data-gap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  margin: 6px 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(140,0,0,0.06) 0px,
+    rgba(140,0,0,0.06) 4px,
+    transparent 4px,
+    transparent 12px
+  );
+  border: 1px solid rgba(180,40,40,0.35);
+  border-left: 3px solid rgba(220,60,60,0.6);
+  position: relative;
+}
+.data-gap::before {
+  content: '//';
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: rgba(220,60,60,0.5);
+  flex-shrink: 0;
+  letter-spacing: -0.05em;
+}
+.data-gap-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(200,100,100,0.65);
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+.data-gap-text .dg-count {
+  color: rgba(230,80,80,0.75);
+  font-weight: 700;
+}
+
+/* Tampon SUPPRIMÉ — pour le panel */
+.panel-censored {
+  position: relative;
+}
+.panel-censored::after {
+  content: 'DONNÉES SUPPRIMÉES';
+  position: absolute;
+  top: 50%; right: 16px;
+  transform: translateY(-50%) rotate(-12deg);
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: rgba(210,40,40,0.13);
+  pointer-events: none;
+  white-space: nowrap;
+  text-align: center;
+  border: 3px solid rgba(210,40,40,0.1);
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+/* PRINT */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html::before, html::after, body::before, body::after { display: none !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff !important; font-size: 10pt; line-height: 1.5; color: #111; }
+  .boot-overlay, .doc-watermark, .ticker { display: none !important; }
+  .c-header { position: static !important; background: #fff !important; border-bottom: 2px solid #222 !important; box-shadow: none !important; }
+  .c-layout { grid-template-columns: 52mm 1fr !important; gap: 0 6mm; max-width: none !important; margin: 0 !important; }
+  .c-sidebar { display: block !important; position: static !important; height: auto !important; overflow: visible !important; background: #f0f0f0 !important; border-right: 1px solid #aaa !important; padding: 4px 6px !important; }
+  .c-main { padding: 0 !important; max-width: none !important; }
+  .c-section { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .panel { background: #fafafa !important; border: 1px solid #ccc !important; border-left: 3px solid #b06a1a !important; box-shadow: none !important; }
+  .panel:hover, .data-cell:hover, .phase-card:hover { transform: none !important; box-shadow: none !important; }
+  a { color: inherit !important; text-decoration: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="doc-watermark"></div>
+
+<!-- BOOT SEQUENCE -->
+<div class="boot-overlay" id="bootOverlay">
+  <img src="unisca-logo.png" alt="UNISCA" style="
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 18px rgba(248,149,42,0.55)) drop-shadow(0 0 6px rgba(248,149,42,0.3)) brightness(0.92) saturate(0.7);
+    animation: logo-pulse 3s ease-in-out infinite;
+  ">
+  <div class="boot-header">
+    <span class="bh-main">UNISCA // TERMINAL SÉCURISÉ</span>
+    <span class="bh-author">RAPPORT RÉDIGÉ PAR // DR. LUA TYLER — DOCTEUR CHERCHEUSE UNISCA D8</span>
+  </div>
+  <div class="boot-text" id="bootText"><span class="boot-cursor"></span></div>
+</div>
+
+<script>
+(function() {
+  const lines = [
+    { text: "INITIALIZING SECURE TERMINAL — DISTRICT 8 // CITÉ 13...", cls: "" },
+    { text: "CHARGEMENT DOSSIER : INC-UNISCA-D8-VORT-001", cls: "orange" },
+    { text: "VÉRIFICATION ACCRÉDITATION...", cls: "" },
+    { text: "NIVEAU MAXIMAL — ACCÈS ACCORDÉ.", cls: "green" },
+    { text: "AUTEUR DU RAPPORT : DR. LUA TYLER // DOCTEUR CHERCHEUSE UNISCA D8", cls: "orange" },
+    { text: "OBJET : SESSION INTERROGATOIRE SUJET BIOTIQUE KRA — CLAN KRA'THRAL", cls: "" },
+    { text: "─────────────────────────────────────────────────────", cls: "dim" },
+    { text: "⚠  STATUT SUJET     : CORPS INTROUVABLE — SANG RETROUVÉ UNIQUEMENT", cls: "red" },
+    { text: "⚠  STATUT LABO      : DÉTRUIT — INCENDIE TOTAL", cls: "red" },
+    { text: "⚠  INCIDENT MAJEUR  : POSSESSION MENTALE DR. TYLER CONFIRMÉE", cls: "red" },
+    { text: "─────────────────────────────────────────────────────", cls: "dim" },
+    { text: "DÉCRYPTAGE TRANSCRIPT... NOTES MANUSCRITES DR. TYLER...", cls: "" },
+    { text: "DOCUMENT TRÈS CONFIDENTIEL — NE PAS DIFFUSER.", cls: "red" },
+    { text: "ACCÈS AUTORISÉ. PROCÉDER AVEC PRÉCAUTION.", cls: "green" },
+  ];
+
+  const container = document.getElementById('bootText');
+  const cursor = container.querySelector('.boot-cursor');
+  let lineIdx = 0;
+
+  function typeLine(line, cb) {
+    const colorMap = { red: 'var(--red-alert)', green: 'var(--vort-green)', orange: 'var(--combine-orange)', dim: 'var(--text-dim)', '': 'inherit' };
+    const div = document.createElement('div');
+    div.style.color = colorMap[line.cls] || 'inherit';
+    container.insertBefore(div, cursor);
+    let i = 0;
+    const speed = 18;
+    const iv = setInterval(() => {
+      div.textContent = line.text.slice(0, ++i);
+      if (i >= line.text.length) { clearInterval(iv); setTimeout(cb, 120); }
+    }, speed);
+  }
+
+  function nextLine() {
+    if (lineIdx >= lines.length) {
+      setTimeout(() => {
+        document.getElementById('bootOverlay').classList.add('fade-out');
+      }, 2200);
+      return;
+    }
+    typeLine(lines[lineIdx++], nextLine);
+  }
+
+  setTimeout(nextLine, 400);
+})();
+</script>
+
+<!-- HEADER -->
+<header class="c-header">
+  <div class="c-header-top">
+    <div class="c-logo">
+      <div class="c-logo-emblem" style="padding: 3px; background: transparent; border: 2px solid var(--combine-orange);">
+        <img src="unisca-logo.png" alt="UNISCA" style="
+          height: 40px;
+          width: 40px;
+          object-fit: contain;
+          border-radius: 50%;
+          filter: drop-shadow(0 0 6px rgba(248,149,42,0.4)) brightness(0.9) saturate(0.65);
+        ">
+      </div>
+      <div class="c-logo-text">
+        <div class="line1">DIVISION RECHERCHE BIOTIQUE // DISTRICT 8</div>
+        <div class="line2">CITÉ 13 — PARIS // SECTEUR MED-ALPHA // LABORATOIRE CONFINEMENT</div>
+      </div>
+    </div>
+    <div class="c-header-status">
+      <div class="status-item">
+        OPÉRATEUR<br><span class="val">DR. LUA TYLER</span>
+      </div>
+      <div class="status-item">
+        RÉFÉRENCE<br><span class="val">INC-UNISCA-D8-VORT-001</span>
+      </div>
+      <div class="status-item">
+        STATUT SUJET<br><span class="val-red">CORPS INTROUVABLE</span>
+      </div>
+      <div class="status-dot"></div>
+    </div>
+  </div>
+  <div class="c-header-title-bar">
+    <h1>RAPPORT D'INCIDENT OFFICIEL // INTERROGATOIRE SUJET BIOTIQUE "KRA" — CLAN KRA'THRAL</h1>
+    <span class="sub">LABORATOIRE UNISCA D8 // RÉDACTION DR. LUA TYLER // INCIDENT CRITIQUE — DESTRUCTION TOTALE</span>
+    <div class="clearance-badge">⚠ CONFIDENTIEL</div>
+  </div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker">
+  <span class="ticker-inner">
+    ⚠ TRÈS CONFIDENTIEL ⚠ &nbsp;·&nbsp; ACCÈS STRICTEMENT RESTREINT — ADMINISTRATION UNISCA &amp; MANDATAIRE DISTRICT 8 UNIQUEMENT &nbsp;·&nbsp; DIFFUSION NON AUTORISÉE PASSIBLE DE SANCTIONS IMMÉDIATES &nbsp;·&nbsp;
+    ⚠ TRÈS CONFIDENTIEL ⚠ &nbsp;·&nbsp; INC-UNISCA-D8-VORT-001 — INCIDENT MAJEUR — DESTRUCTION LABORATOIRE — CORPS SUJET INTROUVABLE — POSSESSION MENTALE CONFIRMÉE &nbsp;·&nbsp;
+    ⚠ TRÈS CONFIDENTIEL ⚠ &nbsp;·&nbsp; DOCUMENT SENSIBLE — NE PAS REPRODUIRE — NE PAS TRANSMETTRE SANS AUTORISATION NIVEAU MAXIMAL &nbsp;·&nbsp;
+    RÉSISTANCE PHARMACOLOGIQUE +72H — AUTODESTRUCTION VORTESQUE — INCENDIE TOTAL — SANG RETROUVÉ — CORPS INTROUVABLE — STATUT SUJET INDÉTERMINÉ &nbsp;·&nbsp;
+    ⚠ TRÈS CONFIDENTIEL ⚠ &nbsp;·&nbsp; ACCÈS STRICTEMENT RESTREINT — ADMINISTRATION UNISCA &amp; MANDATAIRE DISTRICT 8 UNIQUEMENT &nbsp;·&nbsp; DIFFUSION NON AUTORISÉE PASSIBLE DE SANCTIONS IMMÉDIATES &nbsp;·&nbsp;
+    ⚠ TRÈS CONFIDENTIEL ⚠ &nbsp;·&nbsp; INC-UNISCA-D8-VORT-001 — INCIDENT MAJEUR — DESTRUCTION LABORATOIRE — CORPS SUJET INTROUVABLE — POSSESSION MENTALE CONFIRMÉE &nbsp;·&nbsp;
+    ⚠ TRÈS CONFIDENTIEL ⚠ &nbsp;·&nbsp; DOCUMENT SENSIBLE — NE PAS REPRODUIRE — NE PAS TRANSMETTRE SANS AUTORISATION NIVEAU MAXIMAL &nbsp;·&nbsp;
+    RÉSISTANCE PHARMACOLOGIQUE +72H — AUTODESTRUCTION VORTESQUE — INCENDIE TOTAL — SANG RETROUVÉ — CORPS INTROUVABLE — STATUT SUJET INDÉTERMINÉ &nbsp;·&nbsp;
+  </span>
+</div>
+
+<!-- LAYOUT -->
+<div class="c-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="c-sidebar">
+    <div class="sidebar-label">Navigation</div>
+
+    <a href="#s00" class="sidebar-link"><span class="idx">00</span> Vue d'ensemble</a>
+    <a href="#s01" class="sidebar-link"><span class="idx">01</span> Participants</a>
+    <a href="#s02" class="sidebar-link"><span class="idx">02</span> L'Ancien Dominion</a>
+    <a href="#s03" class="sidebar-link"><span class="idx">03</span> La Vortessence</a>
+    <a href="#s04" class="sidebar-link"><span class="idx">04</span> Le Nihilant</a>
+    <a href="#s05" class="sidebar-link"><span class="idx">05</span> La Rupture & Clans</a>
+    <a href="#s06" class="sidebar-link"><span class="idx">06</span> Démonstrations</a>
+    <a href="#s07" class="sidebar-link"><span class="idx">07</span> Déclencheur — Shéol Caron</a>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label">Incident Critique</div>
+    <a href="#s08" class="sidebar-link danger"><span class="idx">08</span> Possession Mentale</a>
+    <a href="#s09" class="sidebar-link danger"><span class="idx">09</span> Propofol — Tolérance</a>
+    <a href="#s10" class="sidebar-link danger"><span class="idx">10</span> Canalisation & Explosion</a>
+    <a href="#s11" class="sidebar-link danger"><span class="idx">11</span> Corps Introuvable</a>
+    <a href="#s12" class="sidebar-link"><span class="idx">12</span> Conclusions & Alertes</a>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label">Annexes</div>
+    <a href="#s13" class="sidebar-link"><span class="idx">↳</span> Glossaire Vortiges</a>
+    <a href="#s14" class="sidebar-link"><span class="idx">↳</span> Chronologie Incident</a>
+    <a href="#s15" class="sidebar-link"><span class="idx">↳</span> Radio UNISCA</a>
+
+    <div class="sidebar-meta">
+      <div class="meta-row">DATE <span>Session en cours</span></div>
+      <div class="meta-row">RÉFERENCE <span>INC-UNISCA-D8-VORT-001</span></div>
+      <div class="meta-row">CLASSIF. <span>CONFIDENTIEL</span></div>
+      <div class="meta-row">STATUT LABO <span class="val-red">DÉTRUIT</span></div>
+      <div class="meta-row">STATUT SUJET <span class="val-red">CORPS INTROUVABLE</span></div>
+      <div class="meta-row">RÉDACTEUR <span>DR. LUA TYLER</span></div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="c-main">
+
+    <!-- SECTION 0 — Vue d'ensemble -->
+    <section id="s00" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.00</div>
+        <div>
+          <div class="section-title">Vue d'ensemble</div>
+          <div class="section-title-sub">CONTEXTE // OBJET DU RAPPORT // SYNTHÈSE EXÉCUTIVE</div>
+        </div>
+      </div>
+
+      <div class="reader-note">
+        <div class="rn-title">// Note de transmission — Administration UNISCA &amp; Mandataire District 8 //</div>
+        Document rédigé par le Dr. <strong>Lua Tyler</strong>, docteur chercheuse UNISCA, 24 ans, à l'attention de l'administration IC et du Mandataire du District 8. Ce rapport est le compte-rendu de la session d'interrogatoire du sujet biotique désigné <strong>"Kra"</strong>, membre du clan Kra'Thral, ainsi que des événements critiques qui ont suivi, ayant mené à la <strong>destruction totale du laboratoire UNISCA</strong> et à la <strong>disparition du sujet</strong>.
+      </div>
+
+      <div class="data-grid">
+        <div class="data-cell">
+          <div class="dc-label">Référence dossier</div>
+          <div class="dc-value" style="font-size:12px;">INC-UNISCA-D8-VORT-001</div>
+        </div>
+        <div class="data-cell dc-red">
+          <div class="dc-label">Statut laboratoire</div>
+          <div class="dc-value red">DÉTRUIT</div>
+          <div class="dc-sub">Incendie post-explosion vortesque</div>
+        </div>
+        <div class="data-cell dc-red">
+          <div class="dc-label">Statut sujet</div>
+          <div class="dc-value red" style="font-size:11px;">CORPS INTROUVABLE</div>
+          <div class="dc-sub">Seul le sang du sujet a été retrouvé</div>
+        </div>
+        <div class="data-cell">
+          <div class="dc-label">Rédacteur</div>
+          <div class="dc-value" style="font-size:12px;">DR. LUA TYLER</div>
+          <div class="dc-sub">Docteur Chercheuse UNISCA D8</div>
+        </div>
+        <div class="data-cell">
+          <div class="dc-label">Lieu</div>
+          <div class="dc-value" style="font-size:12px;">LAB. UNISCA D8</div>
+          <div class="dc-sub">District 8 — Cité 13</div>
+        </div>
+        <div class="data-cell dc-red">
+          <div class="dc-label">Tolérance propofol</div>
+          <div class="dc-value red">+72H</div>
+          <div class="dc-sub">Révélée par le sujet lui-même</div>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        <div class="alert-icon">⚠ ALERTE</div>
+        <div class="alert-text">
+          <strong>INCIDENT MAJEUR :</strong> Le sujet biotique a révélé avoir développé une tolérance complète au propofol depuis au moins 72 heures avant l'incident. Suite à une série de manifestations psychiques et mentales dirigées contre le Dr. Lua Tyler, le sujet a déclenché une <strong>autodestruction vortesque</strong>, provoquant l'explosion et l'incendie intégral du laboratoire UNISCA. Le corps du sujet <strong>n'a pas été retrouvé</strong>. Seules des traces de sang vortigaunt ont été identifiées dans les décombres.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — Participants -->
+    <section id="s01" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.01</div>
+        <div>
+          <div class="section-title">Participants Présents</div>
+          <div class="section-title-sub">PERSONNEL UNISCA // SÉCURITÉ // ADMINISTRATION // SUJET D'ÉTUDE</div>
+        </div>
+      </div>
+
+      <h2>Personnel Scientifique &amp; UNISCA</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar">LT</div>
+          <div>
+            <div class="team-name">Dr. Lua Tyler</div>
+            <div class="team-role">DOCTEUR CHERCHEUSE UNISCA<br>RÉDACTRICE DU RAPPORT<br>VICTIME — POSSESSION MENTALE</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">IN</div>
+          <div>
+            <div class="team-name">Iris Norberg</div>
+            <div class="team-role">CHERCHEUSE UNISCA<br>CO-INVESTIGATRICE PRINCIPALE<br>ACCORD CONCLU AVEC SUJET</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">SC</div>
+          <div>
+            <div class="team-name">Dr. Shéol Caron</div>
+            <div class="team-role">CHERCHEUSE RÉFÉRENTE<br>OBSERVATION ET CRITIQUE<br>METHODOLOGIE RIGOUREUSE</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">RM</div>
+          <div>
+            <div class="team-name">Raphael Mützenberg</div>
+            <div class="team-role">MANDATAIRE<br>SUPERVISION SÉCURITÉ<br>COORDINATION MÉDICALE RADIO</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Sécurité &amp; Protection Civile</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar">C1</div>
+          <div>
+            <div class="team-name">Conscrit 1</div>
+            <div class="team-role">UNITÉ DE PROTECTION CIVILE<br>PRÉSENT EN SALLE<br>QUESTION POSÉE SUR LA FORCE</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">C2</div>
+          <div>
+            <div class="team-name">Conscrit 2</div>
+            <div class="team-role">UNITÉ DE PROTECTION CIVILE<br>PRÉSENT EN SALLE<br>SÉCURISATION DU PÉRIMÈTRE</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">UPC</div>
+          <div>
+            <div class="team-name">Unité de Protection Civile 1</div>
+            <div class="team-role">PROTECTION CIVILE<br>PRÉSENTE EN SALLE<br>EXTRACTION DR. TYLER</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Administration</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar">DR</div>
+          <div>
+            <div class="team-name">Mandataire Dumitru-Constantin Răzvan</div>
+            <div class="team-role">MANDATAIRE DU DISTRICT<br>SUPERVISION ADMINISTRATIVE<br>ORDRE D'ÉVACUATION FINAL</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">LC</div>
+          <div>
+            <div class="team-name">Lucien Clevarl</div>
+            <div class="team-role">VICE-MANDATAIRE<br>PRÉSENT EN SUPERVISION<br>DISTRICT 8 — CITÉ 13</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Sujet d'Étude</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar vort">KRA</div>
+          <div>
+            <div class="team-name" style="color:var(--vort-green);">Le Vortigaunt "Kra"</div>
+            <div class="team-role">CLAN KRA'THRAL — GUERRIER<br>MAINTENU EN POD DE CONFINEMENT<br><span style="color:var(--red-alert);">CORPS INTROUVABLE — STATUT INCERTAIN</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">[ i ]</div>
+        <div class="info-text">Le sujet était maintenu dans un pod/cellule de confinement sécurisé, équipé d'une ligne intraveineuse (propofol) et d'un collier explosif de sécurité. Il a été établi en cours de session que <strong>le sujet avait développé une tolérance complète au propofol depuis au moins 3 jours</strong> sans que le personnel médical en soit informé.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — L'Ancien Dominion -->
+    <section id="s02" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.02</div>
+        <div>
+          <div class="section-title">L'Ancien Dominion</div>
+          <div class="section-title-sub">LES MAÎTRES DES VORTIGAUNTS // CHAÎNE D'ASSERVISSEMENT // LES "POUPÉES"</div>
+        </div>
+      </div>
+
+      <p>À l'ouverture de la session, la chercheuse Iris Norberg a tenté de se montrer familière avec le sujet en utilisant le terme en langue Vortiges <code class="vort">Nep Ah-ta</code>. Le Vortigaunt a immédiatement rectifié, indiquant que les personnes présentes n'étaient pas des <em>Nep Ah-Ta</em>. Il a par la suite remarqué la présence de "guerriers" dans la salle — référence aux unités de la Protection Civile — et questionné leur présence.</p>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Échange — Ancien Dominion & Hiérarchie</div>
+          <div class="cite-terminal-tag">TRANSCRIPTION VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Vous aviez subi une agression l'autre fois de la part d'un homme à votre arrivée. Qu'importe... Madame Norberg aurait des questions à vous poser, il me semble, sur une découverte qu'elle aurait fait ce matin."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Il s'agit d'une espèce vivante... Une poupée au service de nos anciens geôliers... Au service d'un plus grand dessein... Désormais que notre geôlier n'est plus... Les poupées deviennent... Des êtres doués de conscience."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Cela veut dire qu'il existe une sorte de hiérarchie, n'est-ce pas ? Est-ce que vous avez en tête cette hiérarchie, et si vous deviez vous placer dans cet arbre, où seriez-vous, Kra ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"L'arbre que vous voulez que nous décrivions n'a <strong>aucun sens</strong>."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Les Vortigaunts étaient asservis par une autre espèce... Au service de ceux qui vous ont asservis à leur tour."</em></div>
+        </div>
+      </div>
+
+      <div class="panel panel-vort" data-label="RÉVÉLATION — CHAÎNE D'ASSERVISSEMENT">
+        <h3>Chaîne de Domination Commune</h3>
+        <p>Le Vortigaunt a établi un lien direct entre l'asservissement des Vortigaunts et celui des humains : <strong>les deux espèces ont été victimes d'une même hiérarchie oppressive</strong>. Les "poupées", entités vivantes qui servaient d'intermédiaires, sont désormais dotées de conscience depuis la disparition du geôlier principal, le Nihilant.</p>
+        <p>Iris Norberg a relevé que les Vortigaunts pourraient servir d'"exemple historique" au vécu actuel des humains sous le cartel. En aparté, Norberg m'a proposé de les voir comme une organisation tribale de type mongol, unifiée par les plus forts et l'ordre naturel.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — La Vortessence -->
+    <section id="s03" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.03</div>
+        <div>
+          <div class="section-title">La Vortessence</div>
+          <div class="section-title-sub">NATURE // PORTÉE // LIMITES // MÉCANISME DE CONTRÔLE PAR COLLIERS</div>
+        </div>
+      </div>
+
+      <div class="vort-box">
+        <div class="vort-icon">◈ VRT</div>
+        <div class="vort-text"><strong>Définition fondamentale :</strong> à la question "Qu'est-ce que cette énergie en vous, la produisez-vous ou la captez-vous ?", le Vortigaunt a répondu : <strong>"C'est comme respirer."</strong> Il a ensuite précisé : <strong>"La Vortessence, c'est notre âme."</strong> Une vie sans elle est jugée inconcevable. L'âme sans le corps, en revanche, existe — c'est l'état qui attend les Vortigaunts après la mort.</div>
+      </div>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Échange — Nature & Limites de la Vortessence</div>
+          <div class="cite-terminal-tag">TRANSCRIPTION VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Comme nous avec l'air, sans cela, qu'est-ce que vous ressentez ? Si on venait à vous retirer ceci totalement. Pour nous humains, sans respirer, nous mourons."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Ce serait... Inconcevable... <strong>La Vortessence, c'est notre âme.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Jamais personne encore n'a réussi à contrôler celle-ci, la limiter voire la supprimer ? Pas même eux..."</em> <em>[désignant la Protection Civile de la tête]</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous avons été par le passé... Manipulés... La petite chose... La petite forme de vie arrivait à nous forcer à utiliser notre Vortessence contre des choses... En nous utilisant pour attaquer."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"La Vortessence... Est l'énergie que les Vortigaunts usent pour se défendre, attaquer, construire et détruire... <strong>Voir et manipuler toute chose...</strong> Vous n'imaginez même pas ce dont nous sommes capables de faire... Certains Sages sont capables de manipuler l'espace et le temps..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Ils usaient d'une technologie... Des sortes de colliers et les petits êtres usaient d'un envoi d'énergie particulier sur ces colliers pour nous contraindre..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Votre monde... Est très loin... Loin de tout... Vous n'imaginez même pas ce qui vous entoure... Vous étiez chanceux..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Ma foi... Cette chance semble s'être épuisée récemment. Ces colliers, comment avez-vous fait pour vous en débarrasser, c'était un matériel particulier ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Cela semblait être du métal... Vert... Une sorte d'alliage... Ce n'était pas le collier... Nous ne pensons pas que le collier soit la chose qui nous soumettait... Juste une sorte de réceptacle."</em></div>
+        </div>
+      </div>
+
+      <div class="panel panel-blue" data-label="DONNÉES SCIENTIFIQUES">
+        <h3>Portée de la Vortessence — Synthèse</h3>
+        <p>Selon les déclarations du sujet, la Vortessence permet le combat, l'attaque à distance, le soin, la création de boucliers, la télékinésie (confirmée par démonstration en session), la perception étendue, et pour les Sages les plus avancés, la manipulation de l'espace et du temps ainsi que le voyage interdimensionnel. Un Vortigaunt très ancien avait selon lui la capacité de voyager à travers les mondes et dimensions.</p>
+        <p>Iris Norberg a exprimé son scepticisme sur la manipulation temporelle. La question de Lua Tyler sur l'absence de contact terrestre depuis des millions d'années si cette capacité existait est demeurée sans réponse satisfaisante.</p>
+        <p>À noter : le sujet a expressément mentionné que le mélange d'air dans le laboratoire le <strong>fatiguait</strong>, rendant difficile même le simple fait de bouger. Ses capacités étaient donc très probablement réduites tout au long de la session. Cette information est à prendre en compte pour évaluer la portée réelle de ses démonstrations.</p>
+      </div>
+
+      <div class="alert-box">
+        <div class="alert-icon">⚠</div>
+        <div class="alert-text"><strong>Point d'alerte :</strong> Le sujet a explicitement déclaré être capable de manipuler les objets dans la pièce depuis sa cellule et d'atteindre le personnel. Il a dit : <strong>"Voyez comme il est facile pour nous de vous faire du mal. Et pourtant, nous n'en faisons rien."</strong> Cette déclaration a été illustrée par la destruction d'une vitre du laboratoire par télékinésie. Rappel : tout cela alors que sa condition physique était dégradée par l'air du laboratoire.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — Le Nihilant -->
+    <section id="s04" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.04</div>
+        <div>
+          <div class="section-title">Le Nihilant</div>
+          <div class="section-title-sub">LE GEÔLIER PRINCIPAL // <span class="redacted" style="font-size:11px;">████████████████████████████</span> // SYMBOLE KRA'THRAL</div>
+        </div>
+      </div>
+
+      <div class="data-gap">
+        <div class="data-gap-text">
+          TRANSCRIPT — PAGES INITIALES — <span class="dg-count">DONNÉES SUPPRIMÉES</span><br>
+          CES PAGES ONT ÉTÉ RETIRÉES DU DOCUMENT AVANT TRANSMISSION. CONTENU NON DISPONIBLE.
+        </div>
+      </div>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Échange — Le Nihilant & Sa Défaite</div>
+          <div class="cite-terminal-tag">TRANSCRIPTION PARTIELLE — SEGMENTS RETIRÉS</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">IN &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Iris Norberg :</span> <em>"Laissez-moi deviner, c'était une sorte d'<span class="redacted">█████████████████████████████████████████████████████████████████████████</span> ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Yes..."</em></div>
+        </div>
+
+        <div class="data-gap">
+          <div class="data-gap-text"><span class="dg-count">3 RÉPLIQUES SUPPRIMÉES</span> — SEGMENT 04:31 → 05:02</div>
+        </div>
+
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous les Kra'Thral avons utilisé son image pour définir l'un de nos symboles de clans... Pour ne jamais oublier qu'il a été le plus fort."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Ce n'est pas les Vortigaunts qui l'ont terrassé... Mais <span class="redacted">████████████████████████████████████████████████████████████████████████████████████████</span>"</em></div>
+        </div>
+        <div class="cite-terminal-row redacted-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Un homme portant une armure orange et un symbole en son centre."</em></div>
+        </div>
+        <div class="cite-terminal-row redacted-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"[question relative à l'identité du sujet mentionné]"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Une partie des miens... Ceux sur Xen ont été contraints à <span class="redacted">████████████████████████████████████</span> par les petits êtres qui nous manipulaient. Et l'autre partie était paniquée... Cherchant à fuir nos oppresseurs dans votre monde... Ils n'agissaient pas par envie mais par survie et panique."</em></div>
+        </div>
+        <div class="cite-terminal-row redacted-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Cet homme... Il a quelque chose de plus que vous tous réunis..."</em></div>
+        </div>
+
+        <div class="data-gap">
+          <div class="data-gap-text"><span class="dg-count">7 RÉPLIQUES SUPPRIMÉES</span> — SEGMENT 06:14 → 08:53 — JUGÉES NON CONFORMES À LA DIFFUSION</div>
+        </div>
+
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous n'avons pas plus de détail... Juste le <strong>dernier cri du <span class="redacted">████████████</span></strong>."</em></div>
+        </div>
+
+        <div class="data-gap">
+          <div class="data-gap-text">
+            TRANSCRIPT — PAGES FINALES — <span class="dg-count">DONNÉES SUPPRIMÉES</span><br>
+            CONTENU ABSENT DU TRANSCRIPT. PAGES CONCERNÉES NON RETROUVÉES DANS LES NOTES.
+          </div>
+        </div>
+      </div>
+
+      <p>À cette révélation, le Dr. Lua Tyler a échangé un regard entendu avec les autres membres de la sécurité présents. La suite de ses observations sur ce point <span class="redacted">███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████</span>.</p>
+
+      <div class="panel panel-censored" data-label="NOTE RENSEIGNEMENT">
+        <h3>Renseignements Clés — Le Nihilant</h3>
+        <p>Le <strong>Nihilant</strong> : geôlier suprême des Vortigaunts. Description physique — <span class="redacted">██████████████████████████████████████████████████████████████████████████████████████████████████████████</span>. Confirmation par le sujet. Le clan <strong>Kra'Thral</strong> a fait de cette image un symbole de clan : <em>"Pour ne jamais oublier qu'il a été le plus fort."</em></p>
+        <p>Circonstances de sa défaite — <span class="redacted">███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████</span>. Les Vortigaunts sur Xen ont été contraints <span class="redacted">████████████████████████████████████████████████████</span> par les entités asservissantes. Ceux de la Terre fuyaient par panique.</p>
+        <p class="redacted-block">Les informations relatives à l'identité, à l'origine et aux circonstances exactes de la neutralisation du Nihilant ont été retirées de ce rapport avant diffusion. Ces données figurent dans un dossier séparé non accessible à ce niveau. Le contenu de ce paragraphe a été jugé non distribuable dans sa forme originale. Référence interne : [SUPPRIMÉ].</p>
+      </div>
+    </section>
+
+    <!-- SECTION 5 — La Rupture -->
+    <section id="s05" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.05</div>
+        <div>
+          <div class="section-title">La Rupture &amp; Les Clans</div>
+          <div class="section-title-sub">SHA'VORR // LES TROIS PHILOSOPHES // NEP AH-TA · TEQ'KI · KRA'THRAL</div>
+        </div>
+      </div>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Échange — La Rupture (Sha'Vorr) & Formation des Clans</div>
+          <div class="cite-terminal-tag">TRANSCRIPTION VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Vous voulez dire que certains peuvent se téléporter, d'autres non ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Non... Nous sommes issus d'une tribu qui a été frappée par la <strong>Rupture</strong>."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Il s'agit d'un événement... Lointain... De plusieurs millénaires... <strong>Sha'Vorr</strong> a été frappé par cet événement lors d'un rituel que nos anciens ont effectué pour explorer en profondeur la Vortessence... Ils l'ont payé de la Rupture."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Les trois philosophes étaient présents lors de la rupture : <strong>Nep Ah-Ta, Teq'Ki et Kra'Thral.</strong> De là sont issus les clans."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Car... Le Vortigaunt... Selon sa morale... Ses choix et sa personnalité empruntait un chemin... Un chemin qui donnait accès à des pouvoirs particuliers en privant des autres..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Les Kra'Thral ne peuvent user que de pouvoirs offensifs avancés... Le bénéfice là-dedans est que nous avons accès à des pouvoirs... <strong>Oubliés... Avancés.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Qui a décidé de vous châtier ainsi ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"<strong>La Vortessence.</strong> La Rupture nous l'impose."</em></div>
+        </div>
+      </div>
+
+      <div class="panel panel-vort" data-label="CLANS VORTIGAUNTS">
+        <h3>Les Trois Clans issus de la Sha'Vorr</h3>
+        <p><strong>Nep Ah-Ta</strong>, philosophie et connexion, accès à une gamme large de la Vortessence. <strong>Teq'Ki</strong>, utilité et connaissance, spectre polyvalent. <strong>Kra'Thral</strong> (clan du sujet), puissance offensive pure, accès exclusif à des pouvoirs offensifs "oubliés" mais privation des autres capacités comme les soins, les boucliers ou la téléportation. La Rupture n'a pas été choisie, elle a été imposée à la suite d'un rituel d'exploration de la Vortessence il y a plusieurs millénaires.</p>
+      </div>
+
+      <div class="c-table-wrapper">
+        <table class="c-table">
+          <thead>
+            <tr>
+              <th>Clan</th>
+              <th>Philosophie</th>
+              <th>Accès Vortessence</th>
+              <th>Restriction</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="highlight-vort">Nep Ah-Ta</td>
+              <td>Connexion / Esprit</td>
+              <td>Large spectre — soins, perception</td>
+              <td class="dim">Puissance offensive limitée</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Teq'Ki</td>
+              <td>Connaissance / Utilité</td>
+              <td>Polyvalent — construction, navigation</td>
+              <td class="dim">Pouvoirs offensifs avancés limités</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Kra'Thral ◈</td>
+              <td>Force / Combat</td>
+              <td>Pouvoirs offensifs avancés & "oubliés"</td>
+              <td class="dim">Soins, boucliers, téléportation — perdus</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); margin-top: -8px;">◈ Clan du sujet — Bar'Ras "Kra"</p>
+    </section>
+
+    <!-- SECTION 6 — Démonstrations -->
+    <section id="s06" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.06</div>
+        <div>
+          <div class="section-title">Démonstrations &amp; Incidents de Tension</div>
+          <div class="section-title-sub">FAUSSE AUTODESTRUCTION // TÉLÉKINÉSIE — BRIS DE VITRE // AVERTISSEMENTS</div>
+        </div>
+      </div>
+
+      <h3>A. La Feinte de l'Autodestruction</h3>
+      <p>À un moment de la discussion, le Vortigaunt a révélé que les Vortigaunts sont capables d'<strong>accumuler de l'énergie en excès pour provoquer une autodestruction et une explosion catastrophique</strong>. La chercheuse Iris Norberg a alors, de façon irresponsable, invité le sujet à procéder à une démonstration.</p>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Incident — Feinte Autodestruction</div>
+          <div class="cite-terminal-tag">TENSION EXTRÊME</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Le saviez-vous ? Les Vortigaunts peuvent décider d'accumuler de l'énergie en excès pour s'autodétruire et provoquer une énorme explosion ? Si nous le voulions, <strong>tout ce bâtiment et ses occupants en mourrait...</strong> Hors, nous avons décidé de ne pas le faire."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">IN &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Iris Norberg :</span> <em>"Faites-le."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Ahem. Ne le faites pas encore, pas de suite, Kra."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>— Commence à accumuler de l'énergie, clignote vert et rouge de plus en plus vite — <strong>"Weeeeeeeeeeah-uh *Coughing*."</strong></em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Arrêtez ce que vous êtes en train de faire—..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"HAHAHAHAHA ! Qu'il est bon de vous faire peur."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Norberg putain de merde—... Baissez vos armes ça va, ça va c'est bon—... J'ai failli me chier dessus bon sang."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Mais... L'autodestruction n'est pas une blague... <strong>Soyez en averti.</strong>"</em></div>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        <div class="alert-icon">⚠</div>
+        <div class="alert-text">La feinte a provoqué une réaction immédiate et chaotique dans la salle. Armes levées, ordres contradictoires, personnel en état de choc. L'Unité de Protection Civile a intimé à Norberg de ne jamais répéter une telle provocation. Il faut noter que contrairement à cette feinte, la seconde accumulation d'énergie lors de l'incident final <strong>n'était pas une plaisanterie.</strong></div>
+      </div>
+
+      <h3>B. Démonstration de Télékinésie — Destruction de la Vitre</h3>
+      <p>Peu après, le sujet a utilisé sa Vortessence pour manipuler des objets à distance depuis sa cellule, <strong>brisant une vitre du laboratoire par la seule force de son esprit</strong>. Le Mandataire Dumitru-Constantin Răzvan a hurlé que "c'est le contribuable du District qui va payer cette vitre" et que le sujet "devrait avoir honte." J'ai relevé sobrement que cela nous offrait au moins une seconde porte de sortie. Pas sûr que ce soit la meilleure réponse de ma part mais l'ambiance était pesante.</p>
+    </section>
+
+    <!-- SECTION 7 — Dégradation psychologique -->
+    <section id="s07" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.07</div>
+        <div>
+          <div class="section-title">Élément Déclencheur — Dr. Shéol Caron</div>
+          <div class="section-title-sub">QUESTION FATALE // PRISE DE CONSCIENCE DU SUJET // BASCULE IRRÉVERSIBLE</div>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        <div class="alert-icon">⚠ CLÉ</div>
+        <div class="alert-text">
+          <strong>L'élément déclencheur de l'incident a été formellement identifié.</strong> La question posée par le Dr. Shéol Caron — demandant au sujet quel intérêt il avait à demeurer emprisonné s'il pouvait s'en défaire — a provoqué chez le Vortigaunt une <strong>prise de conscience soudaine et irréversible</strong> de sa condition. C'est à ce moment précis, et en réponse directe à cette question, qu'il a prononcé : <strong>"Vous venez de nous faire prendre conscience, Savant."</strong> La séquence qui a suivi a conduit sans interruption à l'autodestruction.
+        </div>
+      </div>
+
+      <p>La dégradation psychologique du sujet s'est construite en plusieurs étapes successives, toutes déclenchées ou amplifiées par les interventions du Dr. Shéol Caron. Le compte-rendu verbatim intégral de cette séquence est reproduit ci-dessous dans l'ordre chronologique exact des échanges.</p>
+
+      <div class="cite-terminal" style="margin-bottom:10px;">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Préambule — Question du Conscrit 1 sur la Force &amp; la Philosophie Kra'Thral</div>
+          <div class="cite-terminal-tag">ÉCHANGE PRÉALABLE — VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Norberg, laissez le Conscrit 1 poser sa question."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous vous écoutons, Guerrier."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">C1 &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Conscrit 1 :</span> <em>"So... Strength is courage ? I must say that I respect that... But what is the purpose of that strength in your opinion ? To what end do you use it ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"<strong>Existé.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"<strong>Être fort, c'est existé.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">C1 &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Conscrit 1 :</span> <em>"So you are saying that the ones who are weak do not exist... Is that right ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Moins... Ils existent moins et leurs droits sont diminués. <strong>Les Forts mangent les faibles.</strong>"</em></div>
+        </div>
+      </div>
+
+      <div class="panel panel-blue" data-label="OBSERVATION — PHILOSOPHIE KRA'THRAL">
+        <h3>La Force comme Existence — Philosophie du Sujet</h3>
+        <p>Cette courte séquence est selon moi l'une des plus révélatrices de toute la session. En deux phrases, le Vortigaunt a résumé toute l'éthique des Kra'Thral : exister, c'est être fort. Être faible, c'est exister moins. Ce n'est pas une métaphore, c'est une hiérarchie littérale de l'être. Les forts mangent les faibles. Cela éclaire directement la façon dont le sujet a vécu sa détention : rester immobile dans une cage, c'est cesser d'exister au sens Kra'Thral du terme.</p>
+        <p>Je note que c'est aussi cette réponse qui a provoqué les premières frictions entre le personnel de sécurité et le Dr. Shéol Caron, ce qui sera développé ci-dessous.</p>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">[ ! ]</div>
+        <div class="info-text"><strong>Incident de protocole — Chamaillerie entre le personnel de sécurité et le Dr. Shéol Caron.</strong> Suite à l'échange du Conscrit 1 avec le sujet, un moment de tension s'est produit entre plusieurs membres du personnel. Le Dr. Shéol Caron, qui désapprouvait l'intervention d'un membre des forces de sécurité dans ce qu'elle considérait être un processus de recherche structuré, a fait part de son mécontentement. Cela a donné lieu à une brève chamaillerie verbale. L'UPC a dû appeler au calme. Le Mandataire Mützenberg a dû intervenir pour rappeler que le Dr. Caron restait la chercheuse référente et demander un peu de respect pour son personnel. La situation a été résolue sans incident physique. Je ne détaillerai pas les mots échangés dans ce rapport, car cela relève de la dynamique interne du groupe et n'a pas d'impact direct sur la conduite de la session. Il convient cependant de noter que cet épisode a légèrement crispé l'atmosphère avant les questions finales de Shéol Caron.</div>
+      </div>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Phase 1 — Première Question de Shéol Caron &amp; Réponse du Sujet</div>
+          <div class="cite-terminal-tag">AMORCE — VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">SC &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Shéol Caron :</span> <em>"Quel intérêt avez-vous à demeurer dans cette cellule, appelons-là comme ça, de votre plein gré ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">SC &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Shéol Caron :</span> <em>"Dites."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous avons un collier explosif."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous n'avons pas peur de la mort, mais nous ne sommes pas pour autant suicidaires... Sauf en cas de derniers moyens."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Si jamais vous sentez que ça ne va pas, dites-nous... Ne vous faites pas exploser."</em></div>
+        </div>
+      </div>
+
+      <div class="cite-terminal" style="margin-top:10px;">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Phase 2 — Question de Relance &amp; Effondrement du Sujet</div>
+          <div class="cite-terminal-tag">DÉCLENCHEUR DIRECT — VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">SC &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Shéol Caron :</span> <em>"Trouvez-vous néanmoins un intérêt à votre présence et à ces échanges ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous n'avons pour le moment... Pas grand intérêt à vous parler."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Vous n'êtes pas les chefs, vous n'allez pas décider de notre sort... <strong>Nous sommes déjà morts.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous cherchons juste à mesurer notre... niveau de détresse."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Nous pouvons vous ramener le chef si cela peut vous aider à comprendre, Kra. Mais il est quelque peu excentrique."</em></div>
+        </div>
+      </div>
+
+      <div class="cite-terminal" style="margin-top:10px; border-left-color: var(--red-alert);">
+        <div class="cite-terminal-head" style="border-bottom-color: rgba(232,85,85,0.35);">
+          <div class="cite-terminal-title" style="color:var(--red-alert);">Phase 3 — Question Finale de Shéol Caron — ÉLÉMENT DÉCLENCHEUR CONFIRMÉ</div>
+          <div class="cite-terminal-tag" style="color:var(--red-alert);">⚠ POINT DE NON-RETOUR — VERBATIM INTÉGRAL</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev" style="color:var(--red-alert);">SC &gt;</div>
+          <div class="cite-terminal-text"><span class="lab" style="color:var(--red-alert);">Dr. Shéol Caron :</span> <em>"<strong>Quel intérêt avez-vous à demeurer dans cette pièce emprisonné, si vous pouvez vous en défaire à tout moment. Vous devez en tirer quelque chose, si nous sommes si similaires.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Pour le moment, plus le temps passe. Moins nous avons d'espoir de sortir d'ici. Tous les humains de votre société nous ont traqués. Pourquoi nous laisser libres ? <strong>Nous sommes un danger pour vous selon vos chefs.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row" style="background: rgba(232,85,85,0.05);">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"<strong>Vous venez de nous faire prendre conscience, Savant...</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row" style="background: rgba(232,85,85,0.07);">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous n'avons en vérité plus <strong>aucun intérêt à continuer.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Observation :</span> <em>Lua Tyler tourne son regard vers Shéol, en clignant des yeux. Silence dans la salle.</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Lua Tyler :</span> <em>"Vous avez réussi à ruiner le moral de notre nouvel ami, Shéol."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">SC &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Dr. Shéol Caron :</span> <em>"Et je m'en remettrai."</em></div>
+        </div>
+      </div>
+
+      <div class="panel panel-red" data-label="ANALYSE — ÉLÉMENT DÉCLENCHEUR">
+        <h3>Analyse — La Question de Shéol Caron comme Catalyseur</h3>
+        <p>La question du Dr. Shéol Caron, <em>"Quel intérêt avez-vous à demeurer dans cette pièce emprisonné, si vous pouvez vous en défaire à tout moment ?"</em>, a constitué l'élément déclencheur direct et identifiable de la suite des événements. En la posant, elle a involontairement forcé le sujet à confronter rationnellement sa propre situation : il n'avait aucune raison de rester.</p>
+        <p>La réplique <strong>"Vous venez de nous faire prendre conscience, Savant"</strong> est prononcée juste après une prise de parole de Lua Tyler qui proposait de ramener le chef hiérarchique. Le terme "Savant" en vortique désigne un être de connaissance ou un chercheur. Il est probable que cette prise de conscience ait été le fruit des deux interventions combinées : les questions de Shéol qui ont amorcé le désespoir, et la proposition creuse de Tyler qui l'a cristallisé. Le Vortigaunt conclut : <em>"Nous n'avons en vérité plus aucun intérêt à continuer."</em></p>
+        <p>À partir de ce moment, le sujet a cessé tout dialogue et a commencé à murmurer en Vortiges. La réponse du Dr. Caron, <em>"Et je m'en remettrai"</em>, a été la dernière chose qu'il ait entendue avant de basculer.</p>
+      </div>
+
+      <p>Le sujet a alors commencé à murmurer en Vortiges de façon de plus en plus soutenue, avant de prononcer à voix haute en langue Xendarienne : <code class="vort">⎍⋏⍙⟟⌇⒐ ⋔⟟⋏⟒ ⌰⏃⌇⏁⌰⊬ ⎐⟟ ⋔⏃⌿ ☊⟟⏁⊬.</code> Sa traduction reste indéterminée. Le personnel a alors commencé à percevoir les premiers signes d'accumulation d'énergie.</p>
+    </section>
+
+    <!-- SECTION 8 — Possession Mentale -->
+    <section id="s08" class="c-section">
+      <div class="section-header">
+        <div class="section-num danger">INC.01</div>
+        <div>
+          <div class="section-title">Possession Mentale — Dr. Lua Tyler</div>
+          <div class="section-title-sub">INTRUSION VORTESQUE // CRIS ET VISIONS // EFFONDREMENT PSYCHIQUE</div>
+        </div>
+      </div>
+
+      <div class="incident-banner">
+        <div class="ib-title">⚠ INCIDENT CRITIQUE — POSSESSION PSYCHIQUE CONFIRMÉE</div>
+        <p>Le Dr. Lua Tyler a été la victime directe d'une intrusion mentale exercée par le Vortigaunt via sa Vortessence. Les manifestations physiques et psychiques observées sont cohérentes avec une forme de possession ou de manipulation psychique à distance. Le sujet agissait depuis sa cellule sans contact physique direct.</p>
+      </div>
+
+      <p>Alors que le Vortigaunt commençait à accumuler de l'énergie pour la seconde fois — après la discussion sur le désespoir et la perte de sens — des manifestations progressives ont été observées chez le Dr. Lua Tyler. Les cris du Vortigaunt semblaient agir directement sur son psychisme par un vecteur non identifié.</p>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Séquence — Possession &amp; Effondrement</div>
+          <div class="cite-terminal-tag">INCIDENT MAJEUR // VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Action :</span> <em>Lua Tyler tourne son regard en direction de la fenêtre soudainement, sursautant — comme si quelque chose se manifestait à l'intérieur de son esprit.</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Tuez-nous."</em> / <em>"Tuez-nous !"</em> / <em>"TUEZ-NOUS !"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Dr. Lua Tyler :</span> <em>"Arrêtez ça Kra—...Arrêtez—...Aidez-moi...Aidez-moi—...!"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Dr. Lua Tyler :</span> <em>"Je n'en peux plus arrêtez ça—...Kra—..Kra—!! Arrêtez ça—..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Observation médicale :</span> <em>Lua Tyler tombe au sol soudainement en pleine crise de panique. Ses yeux tournent, encore et encore, comme si elle était possédée par quelque chose. Elle bave, elle tremble, elle est hors d'elle — comme une œuvre du démon.</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">AR &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Arthur Roche :</span> <em>"Pull her away, now."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Dr. Lua Tyler :</span> <em>"S'il vous plaît arrêtez ça—arrêtez-ça—..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Observation médicale :</span> <em>Lua Tyler continue à respirer lourdement, elle semble peu à peu se calmer. Elle est levée de force, bougeant sa tête de droite à gauche comme si elle était totalement ivre. Son corps vacille de droite à gauche.</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Honorez-nous en tant que Guerrier."</em></div>
+        </div>
+      </div>
+
+      <div class="panel panel-red" data-label="ANALYSE INCIDENT">
+        <h3>Analyse — Nature de la Possession</h3>
+        <p>D'après les éléments que j'ai pu collecter et les témoignages du personnel présent, cette manifestation physique et psychique était <strong>directement liée aux émissions mentales et énergétiques du Vortigaunt via sa Vortessence</strong>. Le sujet agissait sur mon psychisme par une forme d'intrusion à distance, consistant en cris, visions et pénétration directe dans ma conscience.</p>
+        <p>J'étais <strong>incapable de bouger</strong>, de répondre aux ordres d'évacuation, et présentais des symptômes graves : convulsions, tremblements, yeux révulsés. Plusieurs membres du personnel ont tenté physiquement de m'extraire de la salle. Je n'ai aucun souvenir clair de ces quelques minutes.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 9 — Propofol -->
+    <section id="s09" class="c-section">
+      <div class="section-header">
+        <div class="section-num danger">INC.02</div>
+        <div>
+          <div class="section-title">Tolérance au Propofol</div>
+          <div class="section-title-sub">RÉVÉLATION DU SUJET // +72H SANS EFFET // ÉCHEC PHARMACOLOGIQUE</div>
+        </div>
+      </div>
+
+      <div class="incident-banner">
+        <div class="ib-title">⚠ DÉFAILLANCE PROTOCOLE — RÉSISTANCE PHARMACOLOGIQUE NON DÉTECTÉE</div>
+        <p>Le sujet avait développé une tolérance complète au propofol depuis au moins <strong>72 heures</strong> avant l'incident, sans que cela ait été détecté par le personnel médical ni signalé lors d'aucun contrôle de routine. Cette information a été révélée par le sujet lui-même, dans les yeux du Dr. Lua Tyler, au moment précis où elle tentait d'augmenter la dose.</p>
+      </div>
+
+      <p>Dans un dernier réflexe, alors que le Vortigaunt accumulait de l'énergie et hurlait "Tuez-nous !", je me suis approchée de la console de contrôle et ai augmenté le débit de propofol en tournant la valve jusqu'à <strong>25 mg/L</strong>, laissant le liquide s'écouler dans la ligne intraveineuse pour tenter de sédater le sujet.</p>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Moment Clé — Révélation de la Tolérance</div>
+          <div class="cite-terminal-tag">INSTANT CRITIQUE</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Action :</span> <em>Lua Tyler s'approche rapidement en direction de la console. Elle observe alors la zone de propofol et commence à augmenter la dose, soudainement, jusqu'à augmenter la valve à 25 mg/L. Elle laisse le liquide s'écouler à travers l'IV.</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt</span> — <em>les yeux dans les yeux avec Lua Tyler :</em><br><em>"Nous... Nous nous sommes accommodés de vos mélanges humains... <strong>Elles n'ont plus d'effet depuis 3 jours maintenant...</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"C'est... <strong>inutile.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Action :</span> <em>Lua Tyler continue à tourner la valve jusqu'à laisser ses doigts se retirer en entendant les mots de ce dernier. Elle retire alors sa main totalement, comme gênée soudainement.</em></div>
+        </div>
+      </div>
+
+      <div class="c-sep"></div>
+
+      <h2>Communications Radio UNISCA — Urgence Pharmacologique</h2>
+      <p>À la suite de cette révélation, les chercheurs ont engagé une discussion radio urgente sur les alternatives pharmacologiques :</p>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Radio UNISCA — Canal Sécurisé [UNISCA]</div>
+          <div class="cite-terminal-tag">COMMUNICATIONS INTERNES</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">RM &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Raphael Mützenberg :</span> <em>"Forssman, le biotique s'est adapté au propofol, t'as une autre idée ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">WF &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">W.B. Forssman :</span> <em>"Nah, il va résister aussi."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">IN &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Iris Norberg :</span> <em>"Benzo' bien vu."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">WF &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">W.B. Forssman :</span> <em>"La forme de la molécule d'un BZD est la même, c'est juste le cycle qui change. Le site de fixation est le même."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">RM &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Raphael Mützenberg :</span> <em>"Ou on y va avec des antidouleurs de palier 3."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">WF &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">W.B. Forssman :</span> <em>"Vous allez donner du Thiopental. Mettez Thiopental et de la Morphine. <strong>15 mg/h/L de Thiopental.</strong> Impossible qu'il bouge, ses muscles seront paralysés."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">LT &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Dr. Lua Tyler</span> <em>(en état de choc, depuis le sol) :</em> <em>"Kétamine—...Kétamine—...Morphine. Fentanyl—..."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">MDR &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Mandataire Răzvan :</span> <em>"Norberg, ramenez votre petit cul en bas et allez causer avec la créature. Calmez-le."</em></div>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        <div class="alert-icon">⚠</div>
+        <div class="alert-text"><strong>Point d'alerte critique :</strong> La tolérance au propofol était établie depuis au minimum 3 jours avant l'incident. Aucun contrôle de monitoring pharmacologique n'avait détecté cette résistance. La révision immédiate des protocoles de surveillance médicale des biotiques détenus est impérative. La suggestion du Thiopental + Morphine à 15 mg/h/L par Forssman est arrivée trop tard pour être administrée avant l'autodestruction du sujet.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 10 — Canalisation & Explosion -->
+    <section id="s10" class="c-section">
+      <div class="section-header">
+        <div class="section-num danger">INC.03</div>
+        <div>
+          <div class="section-title">Canalisation &amp; Autodestruction</div>
+          <div class="section-title-sub">ACCUMULATION VORTESQUE // EXPLOSION // INCENDIE LABORATOIRE UNISCA</div>
+        </div>
+      </div>
+
+      <div class="incident-banner">
+        <div class="ib-title">⚠ AUTODESTRUCTION CONFIRMÉE — DESTRUCTION TOTALE DU LABORATOIRE</div>
+        <p>Après avoir révélé la tolérance pharmacologique au propofol et demandé à être tué à de nombreuses reprises, le Vortigaunt a commencé à se <strong>canaliser</strong> : une accumulation progressive, délibérée et irréversible de Vortessence. Contrairement à la feinte précédente, aucune hésitation n'a été observée. L'explosion qui s'en est suivie a ravagé et incendié l'intégralité du laboratoire UNISCA.</p>
+      </div>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Séquence Finale — Canalisation &amp; Destruction</div>
+          <div class="cite-terminal-tag">DERNIERS INSTANTS // VERBATIM</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Nous en avons assez. <strong>Tuez-nous.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Tuez-nous !"</em> / <em>"Ou nous vous tuerons."</em> / <em>"<strong>Honorez-nous en tant que Guerrier.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">MDR &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Mandataire Răzvan :</span> <em>"UNE FOIS SEDATÉ, TOUS LE MONDE DEHORS !"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Observation :</span> <em>Le Vortigaunt commence à se canaliser — accumulation progressive et visible de Vortessence. Son corps clignote entre les teintes vertes et rouges, s'intensifiant à chaque instant. Aura énergétique pulsant de façon incontrôlée.</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">AR &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Arthur Roche :</span> <em>"Whoever is not needed here, leave the room now."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">OFC &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">[Officier] :</span> <em>"Malheureusement, on va actionner le collier. C'est le seul moyen."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Vous nous promettez des améliorations depuis des semaines ! <strong>Vous nous mentez ! Vous ne savez que mentir.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"Dey'nahh ?"</em> <em style="color:var(--text-dim); font-size:13px;">[terme Xendarien — traduction inconnue]</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt :</span> <em>"<strong>Honorez-nous en tant que Guerrier.</strong>"</em></div>
+        </div>
+        <div class="cite-terminal-row" style="background: rgba(232,85,85,0.08); border-left: 2px solid rgba(232,85,85,0.4);">
+          <div class="cite-terminal-chev kra">KRA &gt;</div>
+          <div class="cite-terminal-text"><span class="lab kra-name">Le Vortigaunt</span> — <em style="color:var(--text-dim);font-size:13px;">dernier mot prononcé, hurlé, avant l'explosion :</em><br><strong style="font-family:'Orbitron',monospace; font-size:20px; letter-spacing:0.15em; color:var(--red-alert); text-shadow: 0 0 18px rgba(232,85,85,0.7);">"FREEDOM."</strong></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">ÉVÉNEMENT FINAL :</span> <strong>Le Vortigaunt désigné Kra déclenche son autodestruction. L'explosion libère une quantité massive d'énergie Vortesque. Le laboratoire UNISCA est entièrement détruit et incendié.</strong></div>
+        </div>
+      </div>
+
+      <div class="panel panel-red" data-label="BILAN MATÉRIEL">
+        <h3>Bilan de l'Explosion</h3>
+        <p>L'onde de choc a été d'une violence extrême. Les flammes se sont propagées rapidement à l'ensemble du laboratoire. Les structures n'ont pas résisté. L'ensemble du matériel scientifique, des données présentes sur site et des équipements de confinement du laboratoire UNISCA D8 ont été détruits.</p>
+        <p>Le sujet avait prévenu plusieurs fois, dès le début de la session, que l'autodestruction était une capacité réelle. <strong>Ces avertissements n'ont pas été pris suffisamment au sérieux, et j'inclus ma propre responsabilité dans ce constat.</strong></p>
+      </div>
+    </section>
+
+    <!-- SECTION 11 — Mort du sujet -->
+    <section id="s11" class="c-section">
+      <div class="section-header">
+        <div class="section-num danger">INC.04</div>
+        <div>
+          <div class="section-title">Statut du Sujet — Corps Introuvable</div>
+          <div class="section-title-sub">AUCUN CORPS RETROUVÉ // TRACES DE SANG UNIQUEMENT // STATUT INCERTAIN</div>
+        </div>
+      </div>
+
+      <div class="incident-banner">
+        <div class="ib-title">⚠ CORPS NON RETROUVÉ — LE VORTIGAUNT "KRA" // CLAN KRA'THRAL — STATUT INDÉTERMINÉ</div>
+        <p>À l'issue de l'incendie et de l'effondrement partiel du laboratoire UNISCA, une opération de fouille et de récupération a été menée dans l'intégralité des décombres. <strong>Le corps du Vortigaunt désigné "Kra" n'a pas été retrouvé.</strong> Aucun reste physique, aucun fragment osseux ou corporel n'a été localisé. Seules des <strong>traces de sang vortigaunt</strong> ont été identifiées sur plusieurs zones du laboratoire détruit.</p>
+      </div>
+
+      <div class="panel panel-red" data-label="CONSTAT — FOUILLE DES DÉCOMBRES">
+        <h3>Résultats de la Fouille Post-Incident</h3>
+        <p>L'ensemble du laboratoire UNISCA D8 a été passé en revue après extinction de l'incendie. La fouille systématique des décombres a produit le constat suivant :</p>
+        <p><strong>Retrouvé :</strong> traces de sang d'origine vortigaunt, confirmées visuellement par leur teinte caractéristique. Les traces étaient dispersées sur plusieurs zones distinctes du laboratoire, cohérentes avec la position initiale du pod de confinement et les zones environnantes.</p>
+        <p><strong>Non retrouvé :</strong> le corps du sujet, en totalité ou en partie. Aucun reste identifiable. Le pod de confinement lui-même a été partiellement fondu et déformé par l'explosion, mais ne contenait aucune dépouille.</p>
+      </div>
+
+      <div class="data-grid">
+        <div class="data-cell dc-red">
+          <div class="dc-label">Corps retrouvé</div>
+          <div class="dc-value red">NON</div>
+          <div class="dc-sub">Aucun reste physique localisé</div>
+        </div>
+        <div class="data-cell dc-red">
+          <div class="dc-label">Sang retrouvé</div>
+          <div class="dc-value" style="color:var(--vort-green);text-shadow:0 0 10px rgba(78,203,113,0.4);">OUI</div>
+          <div class="dc-sub">Traces de sang vortigaunt — dispersées</div>
+        </div>
+        <div class="data-cell dc-red">
+          <div class="dc-label">Statut officiel</div>
+          <div class="dc-value red" style="font-size:11px;">INDÉTERMINÉ</div>
+          <div class="dc-sub">Décès non confirmable sans corps</div>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        <div class="alert-icon">⚠</div>
+        <div class="alert-text">
+          <strong>Deux hypothèses sont à ce jour envisagées :</strong><br><br>
+          <strong>Hypothèse 1 — Vaporisation :</strong> La violence et la chaleur extrêmes de l'explosion vortesque combinées à l'incendie général du laboratoire pourraient avoir intégralement vaporisé le corps du sujet. Une autodestruction de cette magnitude pourrait théoriquement ne laisser aucun reste solide. La présence de sang antérieure à l'explosion finale expliquerait les traces retrouvées.<br><br>
+          <strong>Hypothèse 2 — Téléportation :</strong> Il a été établi en cours de session que certains Vortigaunts disposent de capacités de déplacement à travers l'espace. Si le sujet, au dernier instant, a canalisé sa Vortessence non pour s'autodétruire totalement mais pour se téléporter — simulant une explosion tout en s'extrayant — cela expliquerait l'absence de corps. Le sang retrouvé pourrait être antérieur à l'événement ou résulter d'un transfert partiel.<br><br>
+          <strong>En l'état actuel, le statut du sujet ne peut pas être officiellement confirmé comme "décès".</strong> Le dossier reste ouvert.
+        </div>
+      </div>
+
+      <div class="vort-box">
+        <div class="vort-icon">◈</div>
+        <div class="vort-text">Le sujet avait déclaré en session que <strong>"mourir n'est pas quelque chose dont nous avons peur"</strong> et que certains Sages de son peuple étaient capables de <strong>"voyager à travers les mondes et dimensions"</strong>. Il avait aussi, lors de la feinte d'autodestruction, prouvé sa capacité à initier puis interrompre volontairement l'accumulation d'énergie. Ces deux éléments me poussent à ne pas écarter la possibilité qu'il ait simulé sa propre mort. Je n'ai aucune certitude là-dessus, mais il serait imprudent de l'ignorer.</div>
+      </div>
+
+      <div class="panel panel-red" data-label="DERNIER MESSAGE VORTESQUE">
+        <h3>Derniers Mots du Sujet</h3>
+        <p>Dans ses derniers instants, le Vortigaunt a prononcé plusieurs mots en succession rapide. Il a d'abord accusé le personnel d'avoir menti sur des promesses d'améliorations de ses conditions : <em>"Vous nous promettez des améliorations depuis des semaines ! Vous nous mentez ! Vous ne savez que mentir."</em> Il a ensuite prononcé le terme Xendarien <code class="vort">Dey'nahh</code> — traduction inconnue — suivi de : <strong>"Honorez-nous en tant que Guerrier."</strong></p>
+        <p>Son tout dernier mot prononcé, hurlé dans le laboratoire une fraction de seconde avant le déclenchement de l'explosion, a été :</p>
+        <p style="font-family:'Orbitron',monospace; font-size:26px; font-weight:900; letter-spacing:0.18em; color:var(--red-alert); text-shadow: 0 0 20px rgba(232,85,85,0.6); margin: 16px 0; text-align:center;">"FREEDOM."</p>
+        <p>Ce terme — en langue anglaise — reste à ce jour sans explication quant à sa signification dans ce contexte. Son origine, sa cible et son sens précis sont inconnus. Il constitue néanmoins le dernier acte de communication consciente du sujet avant sa mort.</p>
+        <p>En cours de session, le sujet avait déclaré : <em>"Mourir n'est pas quelque chose dont nous avons peur. Surtout si c'est lors d'un combat... Pour un Kra'Thral c'est presque naturel."</em></p>
+      </div>
+    </section>
+
+    <!-- SECTION 12 — Conclusions -->
+    <section id="s12" class="c-section">
+      <div class="section-header">
+        <div class="section-num">SEC.12</div>
+        <div>
+          <div class="section-title">Conclusions &amp; Points d'Alerte</div>
+          <div class="section-title-sub">ANALYSES // RECOMMANDATIONS // RISQUES IDENTIFIÉS</div>
+        </div>
+      </div>
+
+      <div class="phase-grid">
+        <div class="phase-card danger">
+          <div class="phase-num">ALERTE 01</div>
+          <div class="phase-name">Tolérance Pharmacologique</div>
+          <div class="phase-desc">Le propofol avait perdu tout effet depuis 72h sans détection. Révision immédiate des protocoles de monitoring.</div>
+          <div class="phase-duration">ACTION REQUISE — IMMÉDIATE</div>
+        </div>
+        <div class="phase-card danger">
+          <div class="phase-num">ALERTE 02</div>
+          <div class="phase-name">Intrusion Mentale</div>
+          <div class="phase-desc">Le Vortigaunt peut exercer une possession psychique à distance via la Vortessence. Personnel exposé non protégé.</div>
+          <div class="phase-duration">PROTOCOLE DE PROTECTION REQUIS</div>
+        </div>
+        <div class="phase-card danger">
+          <div class="phase-num">ALERTE 03</div>
+          <div class="phase-name">Autodestruction</div>
+          <div class="phase-desc">L'autodestruction vortesque est réelle, massive et irréversible. Aucun moyen de confinement actuel ne peut l'empêcher.</div>
+          <div class="phase-duration">REFONTE DES PROTOCOLES</div>
+        </div>
+        <div class="phase-card danger">
+          <div class="phase-num">ALERTE 04</div>
+          <div class="phase-name">Destruction Laboratoire</div>
+          <div class="phase-desc">Perte totale de l'infrastructure, des données et du matériel du laboratoire UNISCA D8. Pertes scientifiques majeures.</div>
+          <div class="phase-duration">ÉVALUATION DES DOMMAGES</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-num">INFO 05</div>
+          <div class="phase-name">Nihilant — Confirmé</div>
+              <div class="phase-desc">Existence du Nihilant confirmée par le sujet. Description physique et circonstances de sa neutralisation — <span class="redacted">████████████████████████████████████████████████████████████</span>.</div>
+          <div class="phase-duration">RENSEIGNEMENT CAPITAL</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-num">INFO 06</div>
+          <div class="phase-name">Clans & Sha'Vorr</div>
+          <div class="phase-desc">Structure des trois clans Vortigaunts documentée. La Rupture comme origine des restrictions de pouvoirs.</div>
+          <div class="phase-duration">BASE DE DONNÉES — À ARCHIVER</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 13 — Glossaire -->
+    <section id="s13" class="c-section">
+      <div class="section-header">
+        <div class="section-num">ANN.01</div>
+        <div>
+          <div class="section-title">Glossaire — Terminologie Vortiges</div>
+          <div class="section-title-sub">TERMES COLLECTÉS DURANT LA SESSION</div>
+        </div>
+      </div>
+
+      <div class="c-table-wrapper">
+        <table class="c-table">
+          <thead>
+            <tr>
+              <th>Terme</th>
+              <th>Traduction / Définition</th>
+              <th>Contexte d'usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="highlight-vort">Vortessence</td>
+              <td>Énergie vitale et âme des Vortigaunts</td>
+              <td>Respiration, combat, construction, perception, soin — fondement existentiel</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Kra'Thral</td>
+              <td>Clan guerrier — puissance offensive pure</td>
+              <td>Clan du sujet. Pouvoirs offensifs avancés, privés de soins/téléportation</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Nep Ah-Ta</td>
+              <td>Clan philosophique / Connexion</td>
+              <td>Utilisé à l'ouverture par Norberg ; corrigé par le sujet</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Teq'Ki</td>
+              <td>Clan connaissance / Utilité</td>
+              <td>Troisième philosophe de la Sha'Vorr</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Sha'Vorr / Rupture</td>
+              <td>Événement fondateur il y a plusieurs millénaires</td>
+              <td>Rituel d'exploration de la Vortessence ayant imposé les restrictions de clans</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Nihilant</td>
+              <td>Geôlier suprême des Vortigaunts</td>
+              <td><span class="redacted">███████████████████████████████████████████████████████████████████████████</span> — <em style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(180,60,60,0.5);letter-spacing:0.1em;">DONNÉES SUPPRIMÉES</em></td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Vortiges</td>
+              <td>Langue des Vortigaunts</td>
+              <td>Nom de la langue — pas d'alphabet humain possible</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Marionnettes / Commandants</td>
+              <td>Petits êtres ayant asservi les Vortigaunts</td>
+              <td>Intraduisibles en Vortiges — ont utilisé les colliers pour les contrôler</td>
+            </tr>
+            <tr>
+              <td class="highlight-vort">Dey'nahh</td>
+              <td>Terme Xendarien — traduction inconnue</td>
+              <td>Prononcé lors de la canalisation finale — derniers instants du sujet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 14 — Chronologie -->
+    <section id="s14" class="c-section">
+      <div class="section-header">
+        <div class="section-num">ANN.02</div>
+        <div>
+          <div class="section-title">Chronologie de l'Incident</div>
+          <div class="section-title-sub">FLUX D'ÉVÉNEMENTS — DE L'INTERROGATOIRE À LA DESTRUCTION</div>
+        </div>
+      </div>
+
+      <div class="chrono-wrap">
+        <div class="cw-title">// SÉQUENCE CHRONOLOGIQUE — SESSION KRA // INCIDENT INC-UNISCA-D8-VORT-001</div>
+        <div class="cw-sub">Chaque étape conduit à la suivante dans une escalade irréversible — de l'interrogatoire à la mort du sujet.</div>
+        <div class="chrono-flow">
+          <div class="chrono-step">
+            <div class="chrono-node">01</div>
+            <div class="chrono-name">Ouverture Session</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">02</div>
+            <div class="chrono-name">Interrogatoire & Révélations</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">03</div>
+            <div class="chrono-name">Feinte Autodestruction</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">04</div>
+            <div class="chrono-name">Télékinésie — Vitre</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">05</div>
+            <div class="chrono-name">Désespoir du Sujet</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">06</div>
+            <div class="chrono-name">Possession Dr. Tyler</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">07</div>
+            <div class="chrono-name">Propofol — Échec</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">08</div>
+            <div class="chrono-name">Canalisation</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">09</div>
+            <div class="chrono-name">Explosion & Incendie</div>
+          </div>
+          <div class="chrono-arrow">▶</div>
+          <div class="chrono-step">
+            <div class="chrono-node">10</div>
+            <div class="chrono-name">Corps Introuvable</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 15 — Radio -->
+    <section id="s15" class="c-section">
+      <div class="section-header">
+        <div class="section-num">ANN.03</div>
+        <div>
+          <div class="section-title">Communications Radio UNISCA</div>
+          <div class="section-title-sub">CANAL INTERNE SÉCURISÉ // ÉCHANGES COMPLETS</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">[ i ]</div>
+        <div class="info-text">Les communications suivantes ont été captées sur le canal interne UNISCA [UNISCA] durant la phase critique de l'incident. Elles constituent les échanges officiels entre le personnel présent en salle et les spécialistes en dehors.</div>
+      </div>
+
+      <div class="cite-terminal">
+        <div class="cite-terminal-head">
+          <div class="cite-terminal-title">Canal [UNISCA] — Urgence Pharmacologique</div>
+          <div class="cite-terminal-tag">LOG RADIO COMPLET</div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">RM &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Raphael Mützenberg :</span> <em>"Forssman, le biotique s'est adapté au propofol, t'as une autre idée ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">WF &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">William Bosworth Forssman :</span> <em>"Nah il va résister aussi."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">IN &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Iris Norberg :</span> <em>"Benzo' bien vu."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">RM &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Raphael Mützenberg :</span> <em>"C'est temporaire... Peut-être que ça va marcher."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">WF &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">William Bosworth Forssman :</span> <em>"La forme de la molécule d'un BZD est la même, c'est juste le cycle qui change. Le site de fixation est le même."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">WF &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">William Bosworth Forssman :</span> <em>"Le site de fixation est le même."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">RM &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Raphael Mützenberg :</span> <em>"Mhm... Ou on y va avec des antidouleurs de palier 3."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">WF &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">William Bosworth Forssman :</span> <em>"Vous allez donner du Thiopental. Mettez Thiopental et de la Morphine. <strong>15 mg/h/L de Thiopental.</strong> Impossible qu'il bouge, ses muscles seront paralysés."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">MDR &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Mandataire Dumitru-Constantin Răzvan :</span> <em>"Norberg, ramenez votre petit cul en bas et allez causer avec la créature. Calmez-le."</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">RM &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Raphael Mützenberg :</span> <em>"Quelqu'un peut me préparer les seringues ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev">YR &gt;</div>
+          <div class="cite-terminal-text"><span class="lab">Yosef Rofe :</span> <em>"What do you need exactly Raphael ?"</em></div>
+        </div>
+        <div class="cite-terminal-row">
+          <div class="cite-terminal-chev red">SYS &gt;</div>
+          <div class="cite-terminal-text"><span class="lab red-name">Fin des communications</span> — <em>Le protocole Thiopental/Morphine n'a pas pu être administré. Le sujet a déclenché son autodestruction avant toute intervention pharmacologique alternative.</em></div>
+        </div>
+      </div>
+
+      <div class="c-sep"></div>
+
+      <div class="reader-note">
+        <div class="rn-title">// Signature officielle — Dr. Lua Tyler //</div>
+        Ce rapport a été rédigé par moi-même, <strong>Lua Tyler</strong>, docteur chercheuse UNISCA, Laboratoire District 8, Cité 13. Il contient mes notes, mes observations directes et les échanges verbatim tels que je me les rappelle et les ai consignés. Les communications radio internes UNISCA sont retranscrites depuis mes notes de terrain. Certains passages sont incomplets car j'étais moi-même hors d'état durant une partie de l'incident. Ce rapport est transmis à l'Administration UNISCA et au Mandataire du District 8.
+        <br><br>
+        <strong>Lua Tyler, Dr. — Docteur Chercheuse UNISCA — Référence INC-UNISCA-D8-VORT-001 — Laboratoire UNISCA, District 8, Cité 13</strong>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="c-footer">
+  <img src="unisca-logo.png" alt="UNISCA" style="
+    height: 44px;
+    width: 44px;
+    object-fit: contain;
+    border-radius: 50%;
+    opacity: 0.7;
+    flex-shrink: 0;
+    filter: brightness(0.85) saturate(0.5) drop-shadow(0 0 4px rgba(248,149,42,0.2));
+  ">
+  <div class="left">
+    UNISCA — DIVISION RECHERCHE BIOTIQUE // DISTRICT 8 // CITÉ 13 — PARIS<br>
+    DOSSIER INC-UNISCA-D8-VORT-001 // CONFIDENTIEL — USAGE INTERNE ADMINISTRATION<br>
+    LEAD : DR. LUA TYLER // CO-INVEST. : IRIS NORBERG // SUPERVISION : MANDATAIRE DUMITRU-CONSTANTIN RĂZVAN
+  </div>
+  <div class="right">
+    UNISCA // CITÉ 13 — PARIS<br>
+    SECTOR MED-ALPHA // DISTRICT 8<br>
+    ⚠ LABORATOIRE DÉTRUIT // CORPS SUJET INTROUVABLE
+  </div>
+</footer>
+
+<script>
+// Mise en surbrillance de la navigation au défilement
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.sidebar-link');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => {
+        l.style.color = '';
+        l.style.borderLeftColor = '';
+        l.style.background = '';
+      });
+      const id = entry.target.id;
+      navLinks.forEach(l => {
+        if (l.getAttribute('href') === '#' + id) {
+          l.style.color = 'var(--combine-orange)';
+          l.style.borderLeftColor = 'var(--combine-orange)';
+          l.style.background = 'var(--combine-orange-glow)';
+        }
+      });
+    }
+  });
+}, { threshold: 0.15 });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
